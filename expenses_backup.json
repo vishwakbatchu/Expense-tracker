@@ -1,0 +1,52 @@
+[
+  {
+    "id": "a1b2c3d4",
+    "date": "2026-09-78",
+    "category": "ghj",
+    "amount": 34.0
+  },
+  {
+    "id": "e5f6g7h8",
+    "date": "2026-08-29",
+    "category": "ff",
+    "amount": 890.0
+  },
+  {
+    "id": "5d3e454f",
+    "date": "2025-04-09",
+    "category": "luxury",
+    "amount": 8907.0
+  },
+  {
+    "id": "b8b6e3c4",
+    "date": "2026-08-14",
+    "category": "food",
+    "amount": 1000.0
+  },
+  {
+    "id": "0150e30a",
+    "date": "2026-09-06",
+    "category": "rent",
+    "amount": 600.0,
+    "recurring": true
+  },
+  {
+    "id": "9ae2db90",
+    "date": "2026-08-06",
+    "category": "rent",
+    "amount": 600.0,
+    "recurring": true
+  },
+  {
+    "id": "66940101",
+    "date": "2026-08-25",
+    "category": "dress",
+    "amount": 900.0
+  },
+  {
+    "id": "e8946583",
+    "date": "2026-06-06",
+    "category": "travelling",
+    "amount": 750.0
+  }
+]
