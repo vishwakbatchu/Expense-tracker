@@ -139,4 +139,4 @@ requirements.txt      # fastapi, uvicorn
 
 ---
 
-Built as a learning project while studying Python and AI/ML fundamentals.
+Built as a learning project while studying Python and AI/ML .
