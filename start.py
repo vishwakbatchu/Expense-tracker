@@ -4,6 +4,8 @@ import os
 import uuid
 import csv
 import shutil
+import html
+import tempfile
 from datetime import datetime
 
 FILENAME = "expenses.json"
@@ -18,6 +20,21 @@ def backup_file(filename):
     if os.path.exists(filename):
         backup_name = filename.replace(".json", "_backup.json")
         shutil.copy(filename, backup_name)
+
+
+def atomic_write_json(filename, data):
+    """Write JSON to a temp file then atomically replace the target, so a
+    crash mid-write can't leave a truncated/corrupt file behind."""
+    dir_name = os.path.dirname(os.path.abspath(filename)) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, prefix=".tmp_", suffix=".json")
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(data, f, indent=2)
+        os.replace(tmp_path, filename)
+    except Exception:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+        raise
 
 
 def restore_from_backup():
@@ -62,8 +79,7 @@ def load_expenses():
 
 def save_expenses(expenses):
     backup_file(FILENAME)
-    with open(FILENAME, "w") as f:
-        json.dump(expenses, f, indent=2)
+    atomic_write_json(FILENAME, expenses)
 
 
 def load_budgets():
@@ -75,8 +91,7 @@ def load_budgets():
 
 def save_budgets(budgets):
     backup_file(BUDGET_FILENAME)
-    with open(BUDGET_FILENAME, "w") as f:
-        json.dump(budgets, f, indent=2)
+    atomic_write_json(BUDGET_FILENAME, budgets)
 
 
 def load_recurring():
@@ -88,8 +103,7 @@ def load_recurring():
 
 def save_recurring(recurring):
     backup_file(RECURRING_FILENAME)
-    with open(RECURRING_FILENAME, "w") as f:
-        json.dump(recurring, f, indent=2)
+    atomic_write_json(RECURRING_FILENAME, recurring)
 
 
 def load_income():
@@ -101,8 +115,7 @@ def load_income():
 
 def save_income(income):
     backup_file(INCOME_FILENAME)
-    with open(INCOME_FILENAME, "w") as f:
-        json.dump(income, f, indent=2)
+    atomic_write_json(INCOME_FILENAME, income)
 
 
 # ---------- Validated Input Helpers ----------
@@ -170,6 +183,21 @@ def filter_by_month(records, year_month):
     return [r for r in records if r.get("date", "").startswith(year_month)]
 
 
+def norm_cat(category):
+    """Normalized key for case/whitespace-insensitive category matching."""
+    return category.strip().lower()
+
+
+def find_budget_for_category(cat_budgets, category):
+    """Look up a category's budget limit ignoring case/whitespace, returning
+    (matched_key, limit) or (None, None) if no match."""
+    target = norm_cat(category)
+    for key, limit in cat_budgets.items():
+        if norm_cat(key) == target:
+            return key, limit
+    return None, None
+
+
 # ---------- Budget Warnings ----------
 
 def check_budget_after_add(new_expense):
@@ -179,7 +207,7 @@ def check_budget_after_add(new_expense):
     month_expenses = filter_by_month(expenses, current_month)
 
     overall_total = sum(e["amount"] for e in month_expenses)
-    if budgets.get("overall"):
+    if budgets.get("overall") is not None:
         limit = budgets["overall"]
         if overall_total > limit:
             print(f"⚠️  OVER overall budget! Spent ₹{overall_total:.2f} of ₹{limit:.2f} this month.")
@@ -188,13 +216,16 @@ def check_budget_after_add(new_expense):
 
     cat = new_expense["category"]
     cat_budgets = budgets.get("categories", {})
-    if cat in cat_budgets:
-        cat_total = sum(e["amount"] for e in month_expenses if e["category"] == cat)
-        cat_limit = cat_budgets[cat]
+    matched_key, cat_limit = find_budget_for_category(cat_budgets, cat)
+    if matched_key is not None:
+        cat_total = sum(
+            e["amount"] for e in month_expenses
+            if norm_cat(e["category"]) == norm_cat(cat)
+        )
         if cat_total > cat_limit:
-            print(f"⚠️  OVER '{cat}' budget! Spent ₹{cat_total:.2f} of ₹{cat_limit:.2f} this month.")
+            print(f"⚠️  OVER '{matched_key}' budget! Spent ₹{cat_total:.2f} of ₹{cat_limit:.2f} this month.")
         elif cat_total > 0.9 * cat_limit:
-            print(f"⚠️  Warning: ₹{cat_total:.2f} of ₹{cat_limit:.2f} '{cat}' budget used this month.")
+            print(f"⚠️  Warning: ₹{cat_total:.2f} of ₹{cat_limit:.2f} '{matched_key}' budget used this month.")
 
 
 # ---------- Expenses ----------
@@ -426,7 +457,7 @@ def set_budgets():
         print(f"Budget for '{category}' set to ₹{amount:.2f}")
     elif choice == "3":
         overall = budgets.get("overall")
-        print(f"\nOverall monthly budget: ₹{overall:.2f}" if overall else "\nOverall monthly budget: not set")
+        print(f"\nOverall monthly budget: ₹{overall:.2f}" if overall is not None else "\nOverall monthly budget: not set")
         cats = budgets.get("categories", {})
         if cats:
             print("Category budgets:")
@@ -545,17 +576,19 @@ def generate_html():
     budgets = load_budgets()
 
     rows = "".join(
-        f"<tr><td>{e.get('date','unknown')}</td><td>{e['category']}</td><td>₹{e['amount']}</td></tr>"
+        f"<tr><td>{html.escape(str(e.get('date','unknown')))}</td>"
+        f"<td>{html.escape(str(e['category']))}</td><td>₹{e['amount']:.2f}</td></tr>"
         for e in filtered
     )
 
     income_rows = "".join(
-        f"<tr><td>{i.get('date','unknown')}</td><td>{i.get('source','unknown')}</td><td>₹{i.get('amount',0)}</td></tr>"
+        f"<tr><td>{html.escape(str(i.get('date','unknown')))}</td>"
+        f"<td>{html.escape(str(i.get('source','unknown')))}</td><td>₹{i.get('amount',0):.2f}</td></tr>"
         for i in filtered_income
     )
 
     summary_rows = "".join(
-        f"<tr><td>{cat}</td><td>₹{amt}</td></tr>"
+        f"<tr><td>{html.escape(str(cat))}</td><td>₹{amt:.2f}</td></tr>"
         for cat, amt in sorted(summary.items(), key=lambda x: -x[1])
     )
 
@@ -565,24 +598,27 @@ def generate_html():
     <h2>Statistics</h2>
     <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
         <tr><td>Average expense</td><td>₹{stats['average']:.2f}</td></tr>
-        <tr><td>Highest expense</td><td>₹{stats['highest']['amount']} ({stats['highest']['category']})</td></tr>
-        <tr><td>Lowest expense</td><td>₹{stats['lowest']['amount']} ({stats['lowest']['category']})</td></tr>
-        <tr><td>Top category</td><td>{stats['top_category']} (₹{stats['top_category_amount']:.2f})</td></tr>
+        <tr><td>Highest expense</td><td>₹{stats['highest']['amount']:.2f} ({html.escape(str(stats['highest']['category']))})</td></tr>
+        <tr><td>Lowest expense</td><td>₹{stats['lowest']['amount']:.2f} ({html.escape(str(stats['lowest']['category']))})</td></tr>
+        <tr><td>Top category</td><td>{html.escape(str(stats['top_category']))} (₹{stats['top_category_amount']:.2f})</td></tr>
     </table>
         """
 
     budget_html = ""
     overall_limit = budgets.get("overall")
     cat_limits = budgets.get("categories", {})
-    if year_month and (overall_limit or cat_limits):
+    if year_month and (overall_limit is not None or cat_limits):
         budget_rows = ""
-        if overall_limit:
+        if overall_limit is not None:
             status = "OVER" if total > overall_limit else "OK"
             budget_rows += f"<tr><td>Overall</td><td>₹{total:.2f} / ₹{overall_limit:.2f}</td><td>{status}</td></tr>"
         for cat, limit in cat_limits.items():
-            spent = summary.get(cat, 0)
+            spent = sum(
+                amt for scat, amt in summary.items()
+                if norm_cat(scat) == norm_cat(cat)
+            )
             status = "OVER" if spent > limit else "OK"
-            budget_rows += f"<tr><td>{cat}</td><td>₹{spent:.2f} / ₹{limit:.2f}</td><td>{status}</td></tr>"
+            budget_rows += f"<tr><td>{html.escape(cat)}</td><td>₹{spent:.2f} / ₹{limit:.2f}</td><td>{status}</td></tr>"
         budget_html = f"""
     <h2>Budget Status ({year_month})</h2>
     <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
@@ -590,7 +626,7 @@ def generate_html():
         {budget_rows}
     </table>
         """
-    elif not year_month and (overall_limit or cat_limits):
+    elif not year_month and (overall_limit is not None or cat_limits):
         budget_html = """
     <h2>Budget Status</h2>
     <p><em>Filter by a specific month above to see budget status — budgets are tracked monthly.</em></p>
@@ -598,7 +634,7 @@ def generate_html():
 
     net_color = "green" if net >= 0 else "red"
 
-    html = f"""<html>
+    page_html = f"""<html>
 <head><title>Expense Tracker</title></head>
 <body style="font-family: Arial; max-width: 600px; margin: 40px auto;">
     <h1>Expense Tracker{title_suffix}</h1>
@@ -608,14 +644,14 @@ def generate_html():
         <tr><th>Date</th><th>Category</th><th>Amount</th></tr>
         {rows}
     </table>
-    <h3>Total Spent: ₹{total}</h3>
+    <h3>Total Spent: ₹{total:.2f}</h3>
 
     <h2>Income</h2>
     <table border="1" cellpadding="8" style="border-collapse: collapse; width: 100%;">
         <tr><th>Date</th><th>Source</th><th>Amount</th></tr>
         {income_rows}
     </table>
-    <h3>Total Income: ₹{total_income}</h3>
+    <h3>Total Income: ₹{total_income:.2f}</h3>
 
     <h2 style="color: {net_color};">Net Savings: ₹{net:.2f}</h2>
 
@@ -630,7 +666,7 @@ def generate_html():
 </html>"""
 
     with open("report.html", "w") as f:
-        f.write(html)
+        f.write(page_html)
 
     webbrowser.open("file://" + os.path.abspath("report.html"))
     print("Report generated and opened.")
@@ -697,7 +733,7 @@ def generate_comparison_report():
         </tr>
         """
 
-    html = f"""<html>
+    page_html = f"""<html>
 <head><title>Monthly Comparison</title></head>
 <body style="font-family: Arial; max-width: 700px; margin: 40px auto;">
     <h1>Monthly Comparison — Last {n} Month(s)</h1>
@@ -710,7 +746,7 @@ def generate_comparison_report():
 </html>"""
 
     with open("comparison.html", "w") as f:
-        f.write(html)
+        f.write(page_html)
 
     webbrowser.open("file://" + os.path.abspath("comparison.html"))
     print("Comparison report generated and opened.")
