@@ -1,22 +1,33 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
+from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 import os
 
 from expense_tracker import storage
 from expense_tracker import core
+from api import auth
 
 app = FastAPI(title="Expense Tracker API")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(SessionMiddleware, secret_key=auth.SECRET_KEY, https_only=False)
+
+require_login = Depends(auth.require_auth)
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 class ExpenseCreate(BaseModel):
@@ -56,7 +67,37 @@ class RestoreRequest(BaseModel):
     file: str  # expenses, budgets, recurring, income
 
 
-@app.get("/api/expenses")
+@app.get("/api/health")
+def health():
+    return {"ok": True}
+
+
+@app.get("/api/auth/status")
+def auth_status(request: Request):
+    return {
+        "auth_required": auth.is_enabled(),
+        "authenticated": bool(request.session.get("authenticated")),
+    }
+
+
+@app.post("/api/auth/login")
+def login(data: LoginRequest, request: Request):
+    if not auth.is_enabled():
+        request.session["authenticated"] = True
+        return {"ok": True}
+    if auth.verify_credentials(data.username, data.password):
+        request.session["authenticated"] = True
+        return {"ok": True}
+    raise HTTPException(status_code=401, detail="Invalid username or password")
+
+
+@app.post("/api/auth/logout")
+def logout(request: Request):
+    request.session.clear()
+    return {"ok": True}
+
+
+@app.get("/api/expenses", dependencies=[require_login])
 def list_expenses(month: Optional[str] = None, search: Optional[str] = None):
     expenses = storage.load_expenses()
     if search:
@@ -66,7 +107,7 @@ def list_expenses(month: Optional[str] = None, search: Optional[str] = None):
     return expenses
 
 
-@app.post("/api/expenses")
+@app.post("/api/expenses", dependencies=[require_login])
 def create_expense(data: ExpenseCreate):
     try:
         expense, warnings = core.add_expense(data.date, data.category, data.amount)
@@ -75,7 +116,7 @@ def create_expense(data: ExpenseCreate):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@app.put("/api/expenses/{expense_id}")
+@app.put("/api/expenses/{expense_id}", dependencies=[require_login])
 def update_expense(expense_id: str, data: ExpenseUpdate):
     try:
         expense, warnings = core.update_expense(
@@ -86,7 +127,7 @@ def update_expense(expense_id: str, data: ExpenseUpdate):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.delete("/api/expenses/{expense_id}")
+@app.delete("/api/expenses/{expense_id}", dependencies=[require_login])
 def remove_expense(expense_id: str):
     try:
         core.delete_expense(expense_id)
@@ -95,7 +136,7 @@ def remove_expense(expense_id: str):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.get("/api/income")
+@app.get("/api/income", dependencies=[require_login])
 def list_income(month: Optional[str] = None):
     income = storage.load_income()
     if month:
@@ -103,13 +144,13 @@ def list_income(month: Optional[str] = None):
     return income
 
 
-@app.post("/api/income")
+@app.post("/api/income", dependencies=[require_login])
 def create_income(data: IncomeCreate):
     entry = core.add_income(data.date, data.source, data.amount)
     return entry
 
 
-@app.delete("/api/income/{income_id}")
+@app.delete("/api/income/{income_id}", dependencies=[require_login])
 def remove_income(income_id: str):
     try:
         core.delete_income(income_id)
@@ -118,32 +159,32 @@ def remove_income(income_id: str):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.get("/api/budgets")
+@app.get("/api/budgets", dependencies=[require_login])
 def get_budgets():
     return storage.load_budgets()
 
 
-@app.put("/api/budgets/overall")
+@app.put("/api/budgets/overall", dependencies=[require_login])
 def update_overall_budget(data: BudgetOverall):
     return core.set_overall_budget(data.amount)
 
 
-@app.put("/api/budgets/category")
+@app.put("/api/budgets/category", dependencies=[require_login])
 def update_category_budget(data: BudgetCategory):
     return core.set_category_budget(data.category, data.amount)
 
 
-@app.get("/api/recurring")
+@app.get("/api/recurring", dependencies=[require_login])
 def list_recurring():
     return storage.load_recurring()
 
 
-@app.post("/api/recurring")
+@app.post("/api/recurring", dependencies=[require_login])
 def create_recurring(data: RecurringCreate):
     return core.add_recurring(data.category, data.amount, data.day)
 
 
-@app.delete("/api/recurring/{recurring_id}")
+@app.delete("/api/recurring/{recurring_id}", dependencies=[require_login])
 def remove_recurring(recurring_id: str):
     try:
         core.delete_recurring(recurring_id)
@@ -152,33 +193,33 @@ def remove_recurring(recurring_id: str):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@app.post("/api/recurring/process")
+@app.post("/api/recurring/process", dependencies=[require_login])
 def process_recurring(month: str = Query(..., pattern=r"^\d{4}-\d{2}$")):
     added = core.process_recurring_for_month(month)
     return {"added": added}
 
 
-@app.get("/api/stats")
+@app.get("/api/stats", dependencies=[require_login])
 def get_stats(month: Optional[str] = None):
     return core.get_dashboard_stats(month)
 
 
-@app.get("/api/comparison")
+@app.get("/api/comparison", dependencies=[require_login])
 def get_comparison(n: int = Query(3, ge=1, le=24)):
     return core.get_comparison_data(n)
 
 
-@app.get("/api/months")
+@app.get("/api/months", dependencies=[require_login])
 def get_months():
     return core.get_all_months_with_data()
 
 
-@app.get("/api/report", response_class=HTMLResponse)
+@app.get("/api/report", response_class=HTMLResponse, dependencies=[require_login])
 def get_report(month: Optional[str] = None):
     return core.generate_report_html(month)
 
 
-@app.get("/api/export/csv", response_class=PlainTextResponse)
+@app.get("/api/export/csv", response_class=PlainTextResponse, dependencies=[require_login])
 def export_csv():
     return PlainTextResponse(
         core.export_expenses_csv(),
@@ -187,7 +228,7 @@ def export_csv():
     )
 
 
-@app.post("/api/backup/restore")
+@app.post("/api/backup/restore", dependencies=[require_login])
 def restore_backup(data: RestoreRequest):
     mapping = {
         "expenses": storage.FILENAME,

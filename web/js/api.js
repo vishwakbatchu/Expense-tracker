@@ -1,10 +1,21 @@
 const API = "/api";
 
+class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
+    credentials: "same-origin",
     headers: { "Content-Type": "application/json", ...options.headers },
     ...options,
   });
+  if (res.status === 401) {
+    throw new AuthError("Not authenticated");
+  }
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -19,6 +30,14 @@ async function request(path, options = {}) {
 }
 
 const api = {
+  authStatus: () => request("/auth/status"),
+  login: (username, password) =>
+    request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    }),
+  logout: () => request("/auth/logout", { method: "POST" }),
+
   getExpenses: (month, search) => {
     const params = new URLSearchParams();
     if (month) params.set("month", month);

@@ -81,11 +81,30 @@ https://expense-tracker-xxxx.onrender.com
 
 Share that link — anyone in the world can open it.
 
-### Step 4 — Keep in mind
+### Step 4 — Enable login (recommended)
 
+In Render → your service → **Environment**:
+
+| Variable | Value |
+|----------|--------|
+| `APP_USERNAME` | Your chosen username |
+| `APP_PASSWORD` | A strong password |
+| `APP_SECRET_KEY` | Auto-generated if using `render.yaml`, or any long random string |
+
+Save changes — Render redeploys automatically. Visitors must sign in before seeing or editing data.
+
+**Local dev:** login is off unless you set those env vars:
+
+```bash
+APP_USERNAME=admin APP_PASSWORD=secret APP_SECRET_KEY=dev-key \
+  python3 -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### Step 5 — Keep in mind
+
+- **No login locally** — auth only activates when `APP_USERNAME` and `APP_PASSWORD` are set.
 - **Free tier sleeps** after ~15 minutes of no visits. The first load after that may take 30–60 seconds.
 - **Data** is stored on the server while it runs. On redeploys, data may reset (fine for a demo; add a database later for production).
-- **No login yet** — anyone with the link can view and edit data. Add auth before sharing widely.
 
 ### Quick temporary link (optional)
 

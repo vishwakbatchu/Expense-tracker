@@ -55,6 +55,10 @@ async function refreshCurrentView() {
     else if (state.view === "recurring") await renderRecurring();
     else if (state.view === "compare") await renderComparison();
   } catch (err) {
+    if (err.name === "AuthError") {
+      showLogin();
+      return;
+    }
     toast(err.message, "error");
   }
 }
@@ -480,7 +484,57 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
-(async function init() {
+function showLogin() {
+  $("#login-screen").hidden = false;
+  $("#app").hidden = true;
+}
+
+function showApp() {
+  $("#login-screen").hidden = true;
+  $("#app").hidden = false;
+}
+
+$("#login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const errEl = $("#login-error");
+  errEl.hidden = true;
+  try {
+    await api.login(fd.get("username"), fd.get("password"));
+    errEl.hidden = true;
+    await bootApp();
+  } catch (err) {
+    errEl.textContent =
+      err.name === "AuthError" || err.message.includes("Invalid")
+        ? "Invalid username or password"
+        : err.message;
+    errEl.hidden = false;
+  }
+});
+
+$("#logout-btn").addEventListener("click", async () => {
+  try {
+    await api.logout();
+  } catch (_) {}
+  showLogin();
+});
+
+async function bootApp() {
+  showApp();
   await loadMonths();
   setView("dashboard");
+}
+
+(async function init() {
+  try {
+    const status = await api.authStatus();
+    $("#logout-btn").hidden = !status.auth_required;
+    if (status.auth_required && !status.authenticated) {
+      showLogin();
+      return;
+    }
+    await bootApp();
+  } catch (err) {
+    toast(err.message, "error");
+  }
 })();
