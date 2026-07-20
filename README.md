@@ -1,65 +1,141 @@
 # Expense Tracker
 
-A command-line expense tracker built in Python. Tracks spending and income, generates HTML reports, and helps you stay on budget — all through a simple terminal menu.
+Track spending and income, set budgets, manage recurring expenses, and view reports — from the **terminal**, **web browser**, or as an **installable app** on your phone or desktop.
 
 ## Features
 
-- **Add / Edit / Delete expenses** — each expense gets a unique ID, with category search to quickly find entries in a long list
-- **Input validation** — dates, amounts, and categories are all validated before being saved
+- **Add / Edit / Delete expenses** — each expense gets a unique ID, with category search
 - **Income tracking** — log income separately and see net savings (income − expenses)
-- **Budgets** — set an overall monthly budget and/or per-category budgets, with live warnings when you're close to or over your limit
-- **Recurring expenses** — set up things like rent or subscriptions once, and they're automatically added each month when you generate a report
-- **HTML reports** — a full report with expense/income tables, category breakdown, statistics, and budget status, generated locally and opened in your browser
-- **Multi-month comparison** — a bar-chart style report comparing spending and income across your last N months
-- **Statistics** — average, highest, and lowest expense, plus your top spending category
-- **CSV export** — export all expenses to a `.csv` file for use in Excel, Sheets, or Numbers
-- **Automatic backups** — every save is backed up automatically, with a menu option to restore from the last backup if something goes wrong
+- **Budgets** — overall monthly and per-category budgets, with live warnings when you're close to or over limit
+- **Recurring expenses** — rent, subscriptions, etc. auto-added when you view a month
+- **Dashboard** — spent, income, net savings, category breakdown, budget bars
+- **Monthly comparison** — side-by-side spent vs income across recent months
+- **HTML reports & CSV export**
+- **Automatic backups** — every save is backed up; restore from the app or CLI
 
-## How to run
+## Web app (website + installable PWA)
 
-Requires Python 3.
+### Setup
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+### Run
+
+From the project folder:
+
+```bash
+python3 -m uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Open **http://localhost:8000** in your browser.
+
+### Install as an app
+
+- **Phone (Chrome / Safari):** open the site → browser menu → **Add to Home Screen** / **Install app**
+- **Desktop (Chrome / Edge):** click the install icon in the address bar, or use the ⬇ button in the app header
+
+The app works offline for the UI shell; data syncs when the server is running.
+
+### API
+
+REST endpoints live under `/api/` (e.g. `/api/expenses`, `/api/stats`). The web UI and any future mobile client can share the same backend.
+
+## Deploy online (public website)
+
+Put the app on the internet so **anyone** can open it with a link. [Render](https://render.com) free tier is the easiest option.
+
+### Step 1 — Push code to GitHub
+
+In your project folder:
+
+```bash
+git add api/ expense_tracker/ web/ requirements.txt render.yaml Procfile README.md
+git commit -m "Add web app and deployment config"
+git push origin main
+```
+
+If GitHub asks you to sign in, use your GitHub account (not a token pasted into the URL).
+
+### Step 2 — Create a Render account
+
+1. Go to [render.com](https://render.com) and sign up (free).
+2. Connect your **GitHub** account when asked.
+
+### Step 3 — Create the web service
+
+1. Click **New +** → **Web Service**.
+2. Select your **Expense-tracker** repository.
+3. Render should detect `render.yaml` automatically. If not, set:
+   - **Build command:** `pip install -r requirements.txt`
+   - **Start command:** `python3 -m uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+4. Choose the **Free** plan.
+5. Click **Create Web Service**.
+
+Wait 2–5 minutes for the first deploy. When it says **Live**, Render gives you a URL like:
+
+```text
+https://expense-tracker-xxxx.onrender.com
+```
+
+Share that link — anyone in the world can open it.
+
+### Step 4 — Keep in mind
+
+- **Free tier sleeps** after ~15 minutes of no visits. The first load after that may take 30–60 seconds.
+- **Data** is stored on the server while it runs. On redeploys, data may reset (fine for a demo; add a database later for production).
+- **No login yet** — anyone with the link can view and edit data. Add auth before sharing widely.
+
+### Quick temporary link (optional)
+
+To share **right now** without deploying (link works only while your Mac is on):
+
+1. Install [ngrok](https://ngrok.com/download).
+2. With your local server running on port 8000:
+   ```bash
+   ngrok http 8000
+   ```
+3. Copy the `https://….ngrok-free.app` URL and share it. It stops when you close ngrok or your computer sleeps.
+
+## Command-line (original)
+
+Still works with no extra dependencies beyond Python 3:
 
 ```bash
 python3 start.py
 ```
 
-You'll see a menu like this:
-
-```
-1. Add expense
-2. Edit expense
-3. Delete expense
-4. Generate report
-5. Export to CSV
-6. View statistics
-7. Manage budgets
-8. Manage recurring expenses
-9. Manage income
-10. Compare months
-11. Restore from backup
-12. Exit
-```
-
-Just enter the number for whatever you want to do, and follow the prompts.
+Menu options 1–12 match the web features (add expense, reports, CSV, budgets, etc.).
 
 ## Data storage
 
-All data is stored locally in JSON files created automatically the first time you use each feature:
+All data is stored locally in JSON files in the project folder:
 
-- `expenses.json` — your expenses
-- `income.json` — your income entries
-- `budgets.json` — your overall and category budgets
-- `recurring.json` — your recurring expense templates
+| File | Contents |
+|------|----------|
+| `expenses.json` | Expenses |
+| `income.json` | Income entries |
+| `budgets.json` | Overall and category budgets |
+| `recurring.json` | Recurring expense templates |
 
-Each of these gets a `_backup.json` copy created automatically before every save.
+Each file gets a `_backup.json` copy before every save.
 
-## Reports
+## Project layout
 
-Running "Generate report" or "Compare months" creates an HTML file (`report.html` or `comparison.html`) in the project folder and opens it directly in your default browser.
+```
+start.py              # CLI entry point
+expense_tracker/      # Shared business logic & storage
+api/main.py           # FastAPI server
+web/                  # Web UI + PWA (HTML, CSS, JS)
+requirements.txt      # fastapi, uvicorn
+```
 
 ## Tech
 
-Built with core Python only — no external dependencies. Uses the standard library (`json`, `csv`, `datetime`, `uuid`, `shutil`, `webbrowser`) to keep it lightweight and easy to run anywhere.
+- **CLI:** Python standard library
+- **Web:** FastAPI + vanilla HTML/CSS/JS (PWA)
+- **Data:** Local JSON files
 
 ---
 

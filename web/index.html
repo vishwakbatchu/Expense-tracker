@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="description" content="Track expenses, income, budgets, and savings">
+  <title>Expense Tracker</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icons/icon.svg">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="header-top">
+        <h1 class="logo">Expense Tracker</h1>
+        <button type="button" class="icon-btn" id="install-btn" hidden title="Install app">⬇</button>
+      </div>
+      <div class="month-filter">
+        <label for="month-select">Month</label>
+        <select id="month-select">
+          <option value="">All time</option>
+        </select>
+      </div>
+    </header>
+
+    <main class="main">
+      <section id="view-dashboard" class="view active">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="card" id="budget-card">
+          <h2>Budget status</h2>
+          <div id="budget-status"></div>
+        </div>
+        <div class="card">
+          <h2>By category</h2>
+          <div id="category-breakdown"></div>
+        </div>
+      </section>
+
+      <section id="view-expenses" class="view">
+        <div class="toolbar">
+          <input type="search" id="expense-search" placeholder="Search category…">
+          <button type="button" class="btn primary" id="add-expense-btn">+ Add</button>
+        </div>
+        <div class="list" id="expense-list"></div>
+      </section>
+
+      <section id="view-income" class="view">
+        <div class="toolbar">
+          <span class="toolbar-spacer"></span>
+          <button type="button" class="btn primary" id="add-income-btn">+ Add</button>
+        </div>
+        <div class="list" id="income-list"></div>
+      </section>
+
+      <section id="view-budgets" class="view">
+        <div class="card">
+          <h2>Overall monthly budget</h2>
+          <form id="overall-budget-form" class="inline-form">
+            <input type="number" name="amount" step="0.01" min="0.01" placeholder="Amount" required>
+            <button type="submit" class="btn primary">Save</button>
+          </form>
+          <p class="hint" id="overall-budget-current"></p>
+        </div>
+        <div class="card">
+          <h2>Category budget</h2>
+          <form id="category-budget-form" class="inline-form">
+            <input type="text" name="category" placeholder="Category" required>
+            <input type="number" name="amount" step="0.01" min="0.01" placeholder="Amount" required>
+            <button type="submit" class="btn primary">Save</button>
+          </form>
+          <div id="category-budgets-list"></div>
+        </div>
+      </section>
+
+      <section id="view-recurring" class="view">
+        <div class="toolbar">
+          <button type="button" class="btn" data-goto="more">← Back</button>
+          <span class="toolbar-spacer"></span>
+          <button type="button" class="btn primary" id="add-recurring-btn">+ Add</button>
+        </div>
+        <div class="list" id="recurring-list"></div>
+        <div class="card">
+          <p class="hint">Recurring items are auto-added when you view a specific month on the dashboard.</p>
+        </div>
+      </section>
+
+      <section id="view-compare" class="view">
+        <div class="toolbar">
+          <button type="button" class="btn" data-goto="more">← Back</button>
+          <label for="compare-months">Months</label>
+          <select id="compare-months">
+            <option value="3">Last 3</option>
+            <option value="6">Last 6</option>
+            <option value="12">Last 12</option>
+          </select>
+        </div>
+        <div class="card" id="comparison-chart"></div>
+      </section>
+
+      <section id="view-more" class="view">
+        <div class="card actions-card">
+          <button type="button" class="btn block" data-goto="recurring">Recurring expenses</button>
+          <button type="button" class="btn block" data-goto="compare">Compare months</button>
+          <hr>
+          <button type="button" class="btn block" id="export-csv-btn">Export expenses (CSV)</button>
+          <button type="button" class="btn block" id="open-report-btn">Open HTML report</button>
+          <hr>
+          <p class="hint">Restore from the last automatic backup:</p>
+          <div class="restore-grid">
+            <button type="button" class="btn" data-restore="expenses">Expenses</button>
+            <button type="button" class="btn" data-restore="budgets">Budgets</button>
+            <button type="button" class="btn" data-restore="recurring">Recurring</button>
+            <button type="button" class="btn" data-restore="income">Income</button>
+          </div>
+        </div>
+        <p class="footer-note">CLI still available: <code>python3 start.py</code></p>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button type="button" class="nav-btn active" data-view="dashboard">Home</button>
+      <button type="button" class="nav-btn" data-view="expenses">Spend</button>
+      <button type="button" class="nav-btn" data-view="income">Income</button>
+      <button type="button" class="nav-btn" data-view="budgets">Budget</button>
+      <button type="button" class="nav-btn" data-view="more">More</button>
+    </nav>
+  </div>
+
+  <dialog id="modal">
+    <form id="modal-form" method="dialog">
+      <h2 id="modal-title"></h2>
+      <div id="modal-fields"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="modal-cancel">Cancel</button>
+        <button type="submit" class="btn primary" id="modal-submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
