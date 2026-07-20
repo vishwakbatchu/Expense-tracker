@@ -283,10 +283,11 @@ def pick_expenses_to_act_on(expenses):
         if not results:
             return None
         list_expenses(results)
+        return get_valid_id(results)
     else:
         if not list_expenses(expenses):
             return None
-    return get_valid_id(expenses)
+        return get_valid_id(expenses)
 
 
 def get_valid_id(expenses):
@@ -527,7 +528,17 @@ def process_recurring_for_month(year_month):
 
     for template in recurring:
         already_added = any(
-            e.get("recurring") and e["category"] == template["category"] and e["amount"] == template["amount"]
+            e.get("recurring") and (
+                # Preferred: matched by the template's own id, so editing the
+                # template's amount later won't cause a duplicate re-add.
+                e.get("recurring_id") == template["id"]
+                # Fallback: for expenses auto-added before recurring_id existed.
+                or (
+                    e.get("recurring_id") is None
+                    and e["category"] == template["category"]
+                    and e["amount"] == template["amount"]
+                )
+            )
             for e in existing_month_expenses
         )
         if not already_added:
@@ -538,7 +549,8 @@ def process_recurring_for_month(year_month):
                 "date": date,
                 "category": template["category"],
                 "amount": template["amount"],
-                "recurring": True
+                "recurring": True,
+                "recurring_id": template["id"]
             }
             expenses.append(new_expense)
             added_any = True
