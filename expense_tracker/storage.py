@@ -2,12 +2,30 @@ import json
 import os
 import shutil
 import tempfile
+from contextvars import ContextVar
 
 DATA_DIR = os.environ.get("DATA_DIR", ".")
+_active_user = ContextVar("active_user", default=None)
 
 
 def _path(name):
+    user = _active_user.get()
+    if user and user != "__owner__":
+        return os.path.join(DATA_DIR, "users", user, name)
     return os.path.join(DATA_DIR, name)
+
+
+def set_active_user(username):
+    """Scope subsequent data access to one signed-in user's private files."""
+    return _active_user.set(username)
+
+
+def reset_active_user(token):
+    _active_user.reset(token)
+
+
+def current_data_file(name):
+    return _path(name)
 
 
 FILENAME = _path("expenses.json")
@@ -46,40 +64,41 @@ def load_json(filename, default):
 
 
 def save_json(filename, data):
+    os.makedirs(os.path.dirname(os.path.abspath(filename)), exist_ok=True)
     backup_file(filename)
     atomic_write_json(filename, data)
 
 
 def load_expenses():
-    return load_json(FILENAME, [])
+    return load_json(_path("expenses.json"), [])
 
 
 def save_expenses(expenses):
-    save_json(FILENAME, expenses)
+    save_json(_path("expenses.json"), expenses)
 
 
 def load_budgets():
-    return load_json(BUDGET_FILENAME, {"overall": None, "categories": {}})
+    return load_json(_path("budgets.json"), {"overall": None, "categories": {}})
 
 
 def save_budgets(budgets):
-    save_json(BUDGET_FILENAME, budgets)
+    save_json(_path("budgets.json"), budgets)
 
 
 def load_recurring():
-    return load_json(RECURRING_FILENAME, [])
+    return load_json(_path("recurring.json"), [])
 
 
 def save_recurring(recurring):
-    save_json(RECURRING_FILENAME, recurring)
+    save_json(_path("recurring.json"), recurring)
 
 
 def load_income():
-    return load_json(INCOME_FILENAME, [])
+    return load_json(_path("income.json"), [])
 
 
 def save_income(income):
-    save_json(INCOME_FILENAME, income)
+    save_json(_path("income.json"), income)
 
 
 def restore_from_backup(filename):

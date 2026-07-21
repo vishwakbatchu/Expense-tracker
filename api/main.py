@@ -2,14 +2,34 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from starlette.middleware.sessions import SessionMiddleware
 from typing import Optional
 import os
+from datetime import datetime
 
 from expense_tracker import storage
 from expense_tracker import core
 from api import auth
+
+
+class UserStorageMiddleware:
+    """Make a signed-in user's private data folder available to each request."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        user = scope.get("session", {}).get("user")
+        token = storage.set_active_user(user)
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            storage.reset_active_user(token)
+
 
 app = FastAPI(title="Expense Tracker API")
 
@@ -20,7 +40,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(UserStorageMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=auth.SECRET_KEY, https_only=False)
+
+
+@app.middleware("http")
+async def no_cache_app_shell(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path in ("/", "/index.html") or path.startswith("/js/") or path == "/sw.js":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
 
 require_login = Depends(auth.require_auth)
 
@@ -30,16 +60,39 @@ class LoginRequest(BaseModel):
     password: str
 
 
-class ExpenseCreate(BaseModel):
+class RegisterRequest(LoginRequest):
+    pass
+
+
+class ExpenseData(BaseModel):
     date: str
     category: str
     amount: float = Field(gt=0)
 
 
-class ExpenseUpdate(BaseModel):
-    date: str
-    category: str
-    amount: float = Field(gt=0)
+    @field_validator("date")
+    @classmethod
+    def validate_date(cls, value: str) -> str:
+        try:
+            datetime.strptime(value, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Date must use YYYY-MM-DD format")
+        return value
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Category cannot be empty")
+        return value
+
+
+class ExpenseCreate(ExpenseData):
+    pass
+
+
+class ExpenseUpdate(ExpenseData):
+    pass
 
 
 class IncomeCreate(BaseModel):
@@ -75,20 +128,31 @@ def health():
 @app.get("/api/auth/status")
 def auth_status(request: Request):
     return {
-        "auth_required": auth.is_enabled(),
-        "authenticated": bool(request.session.get("authenticated")),
+        "auth_required": True,
+        "authenticated": bool(request.session.get("user")),
+        "registration_enabled": True,
     }
 
 
 @app.post("/api/auth/login")
 def login(data: LoginRequest, request: Request):
-    if not auth.is_enabled():
-        request.session["authenticated"] = True
-        return {"ok": True}
-    if auth.verify_credentials(data.username, data.password):
-        request.session["authenticated"] = True
+    user = auth.authenticate(data.username, data.password)
+    if user:
+        request.session.clear()
+        request.session["user"] = user
         return {"ok": True}
     raise HTTPException(status_code=401, detail="Invalid username or password")
+
+
+@app.post("/api/auth/register")
+def register(data: RegisterRequest, request: Request):
+    try:
+        user = auth.create_account(data.username, data.password)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    request.session.clear()
+    request.session["user"] = user
+    return {"ok": True}
 
 
 @app.post("/api/auth/logout")
@@ -231,10 +295,10 @@ def export_csv():
 @app.post("/api/backup/restore", dependencies=[require_login])
 def restore_backup(data: RestoreRequest):
     mapping = {
-        "expenses": storage.FILENAME,
-        "budgets": storage.BUDGET_FILENAME,
-        "recurring": storage.RECURRING_FILENAME,
-        "income": storage.INCOME_FILENAME,
+        "expenses": storage.current_data_file("expenses.json"),
+        "budgets": storage.current_data_file("budgets.json"),
+        "recurring": storage.current_data_file("recurring.json"),
+        "income": storage.current_data_file("income.json"),
     }
     if data.file not in mapping:
         raise HTTPException(status_code=400, detail="Invalid file type")

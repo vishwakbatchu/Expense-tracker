@@ -81,19 +81,24 @@ https://expense-tracker-xxxx.onrender.com
 
 Share that link — anyone in the world can open it.
 
-### Step 4 — Enable login (recommended)
+### Step 4 — Accounts and login
 
 In Render → your service → **Environment**:
 
 | Variable | Value |
 |----------|--------|
-| `APP_USERNAME` | Your chosen username |
-| `APP_PASSWORD` | A strong password |
-| `APP_SECRET_KEY` | Auto-generated if using `render.yaml`, or any long random string |
+| `APP_SECRET_KEY` | A long random secret used to secure sign-in sessions |
 
-Save changes — Render redeploys automatically. Visitors must sign in before seeing or editing data.
+Save changes — Render redeploys automatically. Visitors must create an account and sign in before seeing or editing data. Each account has its own private expenses, income, budgets, and recurring items.
 
-**Local dev:** login is off unless you set those env vars:
+To keep access to your original shared data as the site owner, also set these optional variables:
+
+| Variable | Value |
+|----------|--------|
+| `APP_USERNAME` | Your owner username |
+| `APP_PASSWORD` | A strong owner password |
+
+**Local dev:** login is always enabled. Start the app normally, then create an account from the sign-in screen. To enable an owner account for existing data:
 
 ```bash
 APP_USERNAME=admin APP_PASSWORD=secret APP_SECRET_KEY=dev-key \
@@ -102,7 +107,7 @@ APP_USERNAME=admin APP_PASSWORD=secret APP_SECRET_KEY=dev-key \
 
 ### Step 5 — Keep in mind
 
-- **No login locally** — auth only activates when `APP_USERNAME` and `APP_PASSWORD` are set.
+- **Every visitor signs in** — accounts are created from the sign-in screen and each person's tracker data is private.
 - **Free tier sleeps** after ~15 minutes of no visits. The first load after that may take 30–60 seconds.
 - **Data** is stored on the server while it runs. On redeploys, data may reset (fine for a demo; add a database later for production).
 

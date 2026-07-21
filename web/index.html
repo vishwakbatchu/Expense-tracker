@@ -16,14 +16,38 @@
     <div class="login-card">
       <h1>Expense Tracker</h1>
       <p class="login-subtitle">Sign in to continue</p>
+      <p class="login-hint" id="login-hint" hidden></p>
       <form id="login-form">
         <label>Username<input type="text" name="username" autocomplete="username" required></label>
         <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
         <p class="login-error" id="login-error" hidden></p>
         <button type="submit" class="btn primary block">Sign in</button>
       </form>
+      <button type="button" class="link-btn" id="create-account-btn">Create an account</button>
+      <button type="button" class="link-btn" id="forgot-password-btn">Forgot password?</button>
     </div>
   </div>
+
+  <dialog id="forgot-dialog">
+    <h2>Forgot password?</h2>
+    <p>Ask the site owner to help reset your password.</p>
+    <button type="button" class="btn primary block" id="forgot-close">Got it</button>
+  </dialog>
+
+  <dialog id="register-dialog">
+    <form id="register-form">
+      <h2>Create an account</h2>
+      <p class="hint">Use 3–32 letters, numbers, underscores, or hyphens. Passwords must be at least 8 characters.</p>
+      <label>Username<input type="text" name="username" autocomplete="username" required></label>
+      <label>Password<input type="password" name="password" autocomplete="new-password" required minlength="8"></label>
+      <label>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" required minlength="8"></label>
+      <p class="login-error" id="register-error" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="register-cancel">Cancel</button>
+        <button type="submit" class="btn primary">Create account</button>
+      </div>
+    </form>
+  </dialog>
 
   <div id="app" hidden>
     <header class="header">

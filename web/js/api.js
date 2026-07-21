@@ -30,9 +30,15 @@ async function request(path, options = {}) {
 }
 
 const api = {
-  authStatus: () => request("/auth/status"),
+  authStatus: () =>
+    request("/auth/status", { cache: "no-store", headers: { "Cache-Control": "no-cache" } }),
   login: (username, password) =>
     request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    }),
+  register: (username, password) =>
+    request("/auth/register", {
       method: "POST",
       body: JSON.stringify({ username, password }),
     }),

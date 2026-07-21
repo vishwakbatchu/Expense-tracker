@@ -481,8 +481,20 @@ $("#install-btn").addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(() => {});
+  navigator.serviceWorker.register("/sw.js").then(() => {
+    navigator.serviceWorker.getRegistrations().then((regs) =>
+      regs.forEach((r) => r.update())
+    );
+  }).catch(() => {});
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && !$("#app").hidden) {
+    api.authStatus().then((status) => {
+      if (status.auth_required && !status.authenticated) showLogin();
+    }).catch(() => showLogin());
+  }
+});
 
 function showLogin() {
   $("#login-screen").hidden = false;
@@ -519,7 +531,49 @@ $("#logout-btn").addEventListener("click", async () => {
   showLogin();
 });
 
+$("#forgot-password-btn").addEventListener("click", () => {
+  $("#forgot-dialog").showModal();
+});
+$("#forgot-close").addEventListener("click", () => {
+  $("#forgot-dialog").close();
+});
+
+$("#create-account-btn").addEventListener("click", () => {
+  $("#register-error").hidden = true;
+  $("#register-dialog").showModal();
+});
+$("#register-cancel").addEventListener("click", () => {
+  $("#register-dialog").close();
+});
+$("#register-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const errEl = $("#register-error");
+  const password = fd.get("password");
+  errEl.hidden = true;
+  if (password !== fd.get("confirm_password")) {
+    errEl.textContent = "Passwords do not match";
+    errEl.hidden = false;
+    return;
+  }
+  try {
+    await api.register(fd.get("username"), password);
+    $("#register-dialog").close();
+    e.target.reset();
+    await bootApp();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.hidden = false;
+  }
+});
+
 async function bootApp() {
+  const status = await api.authStatus();
+  if (!status.authenticated) {
+    showLogin();
+    return;
+  }
+  $("#logout-btn").hidden = false;
   showApp();
   await loadMonths();
   setView("dashboard");
@@ -528,13 +582,13 @@ async function bootApp() {
 (async function init() {
   try {
     const status = await api.authStatus();
-    $("#logout-btn").hidden = !status.auth_required;
-    if (status.auth_required && !status.authenticated) {
+    if (!status.authenticated) {
       showLogin();
       return;
     }
     await bootApp();
   } catch (err) {
+    showLogin();
     toast(err.message, "error");
   }
 })();

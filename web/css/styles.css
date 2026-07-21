@@ -124,6 +124,74 @@ body {
   margin: 0;
 }
 
+.login-hint {
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 0 0 16px;
+  font-size: 0.875rem;
+  color: var(--muted-fg);
+}
+
+.link-btn {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#forgot-dialog,
+#register-dialog {
+  border: none;
+  border-radius: var(--radius);
+  padding: 20px;
+  max-width: calc(100vw - 32px);
+  width: 400px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+#forgot-dialog h2,
+#register-dialog h2 {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+
+#forgot-dialog p,
+#register-dialog p {
+  font-size: 0.875rem;
+  margin: 0 0 10px;
+}
+
+#forgot-dialog code {
+  font-size: 0.8125rem;
+  background: var(--bg);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+#register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#register-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 .logo {
   margin: 0;
   font-size: 1.25rem;
