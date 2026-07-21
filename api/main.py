@@ -61,7 +61,16 @@ class LoginRequest(BaseModel):
 
 
 class RegisterRequest(LoginRequest):
-    pass
+    email: str
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    password: str
 
 
 class ExpenseData(BaseModel):
@@ -147,7 +156,7 @@ def login(data: LoginRequest, request: Request):
 @app.post("/api/auth/register")
 def register(data: RegisterRequest, request: Request):
     try:
-        user = auth.create_account(data.username, data.password)
+        user = auth.create_account(data.username, data.password, data.email)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
     request.session.clear()
@@ -158,6 +167,34 @@ def register(data: RegisterRequest, request: Request):
 @app.post("/api/auth/logout")
 def logout(request: Request):
     request.session.clear()
+    return {"ok": True}
+
+
+@app.post("/api/auth/forgot-password")
+def forgot_password(data: ForgotPasswordRequest):
+    from api import email_service
+    result = auth.create_reset_token(data.email)
+    if result:
+        username, token = result
+        users = auth._load_users()
+        email = users.get(username, {}).get("email")
+        if email:
+            try:
+                email_service.send_password_reset_email(email, token)
+            except Exception:
+                pass
+    # Always return the same response, whether or not the email matched an account
+    return {"ok": True, "message": "If that email is registered, a reset link has been sent."}
+
+
+@app.post("/api/auth/reset-password")
+def reset_password(data: ResetPasswordRequest):
+    try:
+        success = auth.consume_reset_token(data.token, data.password)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+    if not success:
+        raise HTTPException(status_code=400, detail="This reset link is invalid or has expired")
     return {"ok": True}
 
 

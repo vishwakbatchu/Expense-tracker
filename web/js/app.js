@@ -525,10 +525,29 @@ $("#logout-btn").addEventListener("click", async () => {
 });
 
 $("#forgot-password-btn").addEventListener("click", () => {
+  $("#forgot-error").hidden = true;
+  $("#forgot-success").hidden = true;
+  $("#forgot-form").reset();
   $("#forgot-dialog").showModal();
 });
 $("#forgot-close").addEventListener("click", () => {
   $("#forgot-dialog").close();
+});
+$("#forgot-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const errEl = $("#forgot-error");
+  const successEl = $("#forgot-success");
+  errEl.hidden = true;
+  successEl.hidden = true;
+  try {
+    await api.forgotPassword(fd.get("email"));
+    successEl.textContent = "If that email is registered, a reset link has been sent.";
+    successEl.hidden = false;
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.hidden = false;
+  }
 });
 
 $("#create-account-btn").addEventListener("click", () => {
@@ -550,7 +569,7 @@ $("#register-form").addEventListener("submit", async (e) => {
     return;
   }
   try {
-    await api.register(fd.get("username"), password);
+    await api.register(fd.get("username"), password, fd.get("email"));
     $("#register-dialog").close();
     e.target.reset();
     await bootApp();

@@ -29,9 +29,17 @@
   </div>
 
   <dialog id="forgot-dialog">
-    <h2>Forgot password?</h2>
-    <p>Ask the site owner to help reset your password.</p>
-    <button type="button" class="btn primary block" id="forgot-close">Got it</button>
+    <form id="forgot-form">
+      <h2>Forgot password?</h2>
+      <p class="hint">Enter your account email and we'll send you a reset link.</p>
+      <label>Email<input type="email" name="email" autocomplete="email" required></label>
+      <p class="login-error" id="forgot-error" hidden></p>
+      <p class="hint" id="forgot-success" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="forgot-close">Cancel</button>
+        <button type="submit" class="btn primary">Send reset link</button>
+      </div>
+    </form>
   </dialog>
 
   <dialog id="register-dialog">
@@ -39,6 +47,7 @@
       <h2>Create an account</h2>
       <p class="hint">Use 3–32 letters, numbers, underscores, or hyphens. Passwords must be at least 8 characters.</p>
       <label>Username<input type="text" name="username" autocomplete="username" required></label>
+      <label>Email<input type="email" name="email" autocomplete="email" required></label>
       <label>Password<input type="password" name="password" autocomplete="new-password" required minlength="8"></label>
       <label>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" required minlength="8"></label>
       <p class="login-error" id="register-error" hidden></p>
