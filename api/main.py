@@ -181,8 +181,8 @@ def forgot_password(data: ForgotPasswordRequest):
         if email:
             try:
                 email_service.send_password_reset_email(email, token)
-            except Exception:
-                pass
+            except Exception as error:
+                print(f"RESET EMAIL FAILED: {error}")
     # Always return the same response, whether or not the email matched an account
     return {"ok": True, "message": "If that email is registered, a reset link has been sent."}
 
