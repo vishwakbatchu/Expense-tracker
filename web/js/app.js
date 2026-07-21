@@ -38,11 +38,6 @@ function setView(name) {
   state.view = name;
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   $(`#view-${name}`).classList.add("active");
-  const navParent = { recurring: "more", compare: "more" };
-  const navActive = navParent[name] || name;
-  document.querySelectorAll(".nav-btn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.view === navActive);
-  });
   refreshCurrentView();
 }
 
@@ -338,10 +333,6 @@ modalForm.addEventListener("submit", async (e) => {
 
 $("#modal-cancel").addEventListener("click", () => modal.close());
 
-document.querySelectorAll(".nav-btn").forEach((btn) => {
-  btn.addEventListener("click", () => setView(btn.dataset.view));
-});
-
 document.querySelectorAll("[data-goto]").forEach((btn) => {
   btn.addEventListener("click", () => setView(btn.dataset.goto));
 });
@@ -497,11 +488,13 @@ document.addEventListener("visibilitychange", () => {
 });
 
 function showLogin() {
+  document.body.classList.add("login-mode");
   $("#login-screen").hidden = false;
   $("#app").hidden = true;
 }
 
 function showApp() {
+  document.body.classList.remove("login-mode");
   $("#login-screen").hidden = true;
   $("#app").hidden = false;
 }

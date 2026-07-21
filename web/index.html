@@ -69,6 +69,27 @@
     <main class="main">
       <section id="view-dashboard" class="view active">
         <div class="stats-grid" id="stats-grid"></div>
+        <section class="dashboard-options" aria-label="Dashboard options">
+          <h2>Dashboard options</h2>
+          <div class="dashboard-option-grid">
+            <button type="button" class="dashboard-option" data-goto="expenses">
+              <span>Expenses</span>
+              <small>Add and manage spending</small>
+            </button>
+            <button type="button" class="dashboard-option" data-goto="income">
+              <span>Income</span>
+              <small>Record your earnings</small>
+            </button>
+            <button type="button" class="dashboard-option" data-goto="budgets">
+              <span>Budgets</span>
+              <small>Set spending limits</small>
+            </button>
+            <button type="button" class="dashboard-option" data-goto="more">
+              <span>More tools</span>
+              <small>Reports and recurring items</small>
+            </button>
+          </div>
+        </section>
         <div class="card" id="budget-card">
           <h2>Budget status</h2>
           <div id="budget-status"></div>
@@ -160,13 +181,6 @@
       </section>
     </main>
 
-    <nav class="bottom-nav">
-      <button type="button" class="nav-btn active" data-view="dashboard">Home</button>
-      <button type="button" class="nav-btn" data-view="expenses">Spend</button>
-      <button type="button" class="nav-btn" data-view="income">Income</button>
-      <button type="button" class="nav-btn" data-view="budgets">Budget</button>
-      <button type="button" class="nav-btn" data-view="more">More</button>
-    </nav>
   </div>
 
   <dialog id="modal">
