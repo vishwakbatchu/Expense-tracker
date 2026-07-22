@@ -146,10 +146,11 @@ Menu options 1–12 match the web features (add expense, reports, CSV, budgets, 
 
 ## Data storage
 
-The application uses SQLite through SQLAlchemy. By default, the database is
-stored in `expense_tracker.db`; set `DATABASE_URL` to use a different database
-location. On first launch, existing JSON files are imported automatically, so
-current accounts and financial data are preserved.
+The application uses SQLAlchemy. Locally, it defaults to SQLite in
+`expense_tracker.db`. On Render, `render.yaml` provisions Render Postgres and
+supplies its private connection string as `DATABASE_URL`. On first launch,
+existing JSON files are imported automatically, so current accounts and
+financial data are preserved.
 
 ## Project layout
 
