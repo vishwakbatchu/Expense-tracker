@@ -44,13 +44,21 @@
   <dialog id="forgot-dialog">
     <form id="forgot-form">
       <h2>Forgot password?</h2>
-      <p class="hint">Enter your account email and we'll send you a reset link.</p>
-      <label>Email<input type="email" name="email" autocomplete="email" required></label>
+      <div id="forgot-step-email">
+        <p class="hint">Enter your account email and we'll generate a reset code.</p>
+        <label>Email<input type="email" name="email" autocomplete="email" required></label>
+      </div>
+      <div id="forgot-step-reset" hidden>
+        <p class="hint" id="forgot-code-display"></p>
+        <label>Reset code<input type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code" required></label>
+        <label>New password<input type="password" name="password" autocomplete="new-password" required minlength="8"></label>
+        <label>Confirm new password<input type="password" name="confirm_password" autocomplete="new-password" required minlength="8"></label>
+      </div>
       <p class="login-error" id="forgot-error" hidden></p>
       <p class="hint" id="forgot-success" hidden></p>
       <div class="modal-actions">
         <button type="button" class="btn" id="forgot-close">Cancel</button>
-        <button type="submit" class="btn primary">Send reset link</button>
+        <button type="submit" class="btn primary" id="forgot-submit">Get reset code</button>
       </div>
     </form>
   </dialog>
