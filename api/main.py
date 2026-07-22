@@ -1,3 +1,4 @@
+
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -69,7 +70,8 @@ class ForgotPasswordRequest(BaseModel):
 
 
 class ResetPasswordRequest(BaseModel):
-    token: str
+    username: str
+    code: str
     password: str
 
 
@@ -172,29 +174,22 @@ def logout(request: Request):
 
 @app.post("/api/auth/forgot-password")
 def forgot_password(data: ForgotPasswordRequest):
-    from api import email_service
-    result = auth.create_reset_token(data.email)
-    if result:
-        username, token = result
-        users = auth._load_users()
-        email = users.get(username, {}).get("email")
-        if email:
-            try:
-                email_service.send_password_reset_email(email, token)
-            except Exception as error:
-                print(f"RESET EMAIL FAILED: {error}")
-    # Always return the same response, whether or not the email matched an account
-    return {"ok": True, "message": "If that email is registered, a reset link has been sent."}
+    result = auth.create_reset_code(data.email)
+    if not result:
+        raise HTTPException(status_code=404, detail="No account found with that email")
+    username, code = result
+    # No email is sent — the code is returned directly so the frontend can show it.
+    return {"ok": True, "username": username, "code": code}
 
 
 @app.post("/api/auth/reset-password")
 def reset_password(data: ResetPasswordRequest):
     try:
-        success = auth.consume_reset_token(data.token, data.password)
+        success = auth.consume_reset_code(data.username, data.code, data.password)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
     if not success:
-        raise HTTPException(status_code=400, detail="This reset link is invalid or has expired")
+        raise HTTPException(status_code=400, detail="That code is invalid or has expired")
     return {"ok": True}
 
 
