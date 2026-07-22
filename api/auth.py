@@ -20,7 +20,8 @@ USERNAME_PATTERN = re.compile(r"^[a-z0-9_-]{3,32}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_ITERATIONS = 600_000
-RESET_TOKEN_TTL_SECONDS = 30 * 60
+RESET_CODE_TTL_SECONDS = 10 * 60
+RESET_CODE_MAX_ATTEMPTS = 5
 
 
 def _load_users():
@@ -127,32 +128,59 @@ def _find_username_by_email(email: str) -> str | None:
     return None
 
 
-def create_reset_token(email: str) -> tuple[str, str] | None:
+def _hash_reset_code(username: str, code: str) -> str:
+    # Keyed by username so a code for one account can't be replayed on another.
+    return hashlib.sha256(f"{username}:{code}".encode()).hexdigest()
+
+
+def create_reset_code(email: str) -> tuple[str, str] | None:
+    """Generate a 6-digit reset code for the account matching this email.
+
+    Returns (username, code) so the caller can display the code directly on
+    the page — no email is sent. Returns None if no account matches the
+    email address given.
+    """
     username = _find_username_by_email(email)
     if not username:
         return None
-    token = secrets.token_urlsafe(32)
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
+    code = f"{secrets.randbelow(1_000_000):06d}"
     resets = _load_resets()
-    resets[token_hash] = {"username": username, "expires": time.time() + RESET_TOKEN_TTL_SECONDS}
+    resets[username] = {
+        "code_hash": _hash_reset_code(username, code),
+        "expires": time.time() + RESET_CODE_TTL_SECONDS,
+        "attempts": 0,
+    }
     _save_resets(resets)
-    return username, token
+    return username, code
 
 
-def consume_reset_token(token: str, new_password: str) -> bool:
+def consume_reset_code(username: str, code: str, new_password: str) -> bool:
     if len(new_password) < PASSWORD_MIN_LENGTH:
         raise ValueError("Password must be at least 8 characters")
-    token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+    normalized = normalize_username(username)
     resets = _load_resets()
-    entry = resets.get(token_hash)
+    entry = resets.get(normalized)
     if not entry or entry["expires"] < time.time():
         return False
-    username = entry["username"]
-    users = _load_users()
-    if username not in users:
+
+    # Cap guesses since a 6-digit code only has 1,000,000 combinations —
+    # far weaker than the old 32-byte token, so brute-force protection matters here.
+    if entry.get("attempts", 0) >= RESET_CODE_MAX_ATTEMPTS:
+        del resets[normalized]
+        _save_resets(resets)
         return False
-    users[username]["password"] = _hash_password(new_password)
+
+    if not hmac.compare_digest(_hash_reset_code(normalized, code), entry["code_hash"]):
+        entry["attempts"] = entry.get("attempts", 0) + 1
+        _save_resets(resets)
+        return False
+
+    users = _load_users()
+    if normalized not in users:
+        return False
+    users[normalized]["password"] = _hash_password(new_password)
     _save_users(users)
-    del resets[token_hash]
+    del resets[normalized]
     _save_resets(resets)
     return True
