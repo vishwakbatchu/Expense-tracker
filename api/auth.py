@@ -2,49 +2,26 @@
 import base64
 import hashlib
 import hmac
-import json
 import os
 import re
 import secrets
 import time
 
 from fastapi import HTTPException, Request
+from sqlalchemy import select
 
-from expense_tracker import storage
+from database import SessionLocal
+from models import PasswordReset, User
 
 USERNAME = os.environ.get("APP_USERNAME", "")
 PASSWORD = os.environ.get("APP_PASSWORD", "")
 SECRET_KEY = os.environ.get("APP_SECRET_KEY", "dev-insecure-change-in-production")
-USERS_FILE = os.path.join(os.environ.get("DATA_DIR", "."), "users.json")
-RESETS_FILE = os.path.join(os.environ.get("DATA_DIR", "."), "password_resets.json")
 USERNAME_PATTERN = re.compile(r"^[a-z0-9_-]{3,32}$")
 EMAIL_PATTERN = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_ITERATIONS = 600_000
 RESET_CODE_TTL_SECONDS = 10 * 60
 RESET_CODE_MAX_ATTEMPTS = 5
-
-
-def _load_users():
-    if not os.path.exists(USERS_FILE):
-        return {}
-    with open(USERS_FILE, "r") as file:
-        return json.load(file)
-
-
-def _save_users(users):
-    storage.atomic_write_json(USERS_FILE, users)
-
-
-def _load_resets():
-    if not os.path.exists(RESETS_FILE):
-        return {}
-    with open(RESETS_FILE, "r") as file:
-        return json.load(file)
-
-
-def _save_resets(resets):
-    storage.atomic_write_json(RESETS_FILE, resets)
 
 
 def normalize_username(username: str) -> str:
@@ -66,8 +43,9 @@ def validate_new_account(username: str, password: str, email: str) -> tuple[str,
         raise ValueError("Please enter a valid email address")
     if USERNAME and normalized == normalize_username(USERNAME):
         raise ValueError("That username is already in use")
-    if normalized in _load_users():
-        raise ValueError("That username is already in use")
+    with SessionLocal() as session:
+        if session.get(User, normalized) is not None:
+            raise ValueError("That username is already in use")
     return normalized, normalized_email
 
 
@@ -96,9 +74,8 @@ def _verify_password(password: str, encoded: str) -> bool:
 
 def create_account(username: str, password: str, email: str) -> str:
     normalized, normalized_email = validate_new_account(username, password, email)
-    users = _load_users()
-    users[normalized] = {"password": _hash_password(password), "email": normalized_email}
-    _save_users(users)
+    with SessionLocal.begin() as session:
+        session.add(User(username=normalized, password_hash=_hash_password(password), email=normalized_email))
     return normalized
 
 
@@ -108,8 +85,9 @@ def authenticate(username: str, password: str) -> str | None:
         if secrets.compare_digest(password, PASSWORD):
             return "__owner__"
         return None
-    account = _load_users().get(normalized)
-    if account and _verify_password(password, account.get("password", "")):
+    with SessionLocal() as session:
+        account = session.get(User, normalized)
+    if account and _verify_password(password, account.password_hash):
         return normalized
     return None
 
@@ -123,10 +101,8 @@ def require_auth(request: Request):
 
 def _find_username_by_email(email: str) -> str | None:
     normalized_email = normalize_email(email)
-    for uname, info in _load_users().items():
-        if info.get("email", "") == normalized_email:
-            return uname
-    return None
+    with SessionLocal() as session:
+        return session.scalar(select(User.username).where(User.email == normalized_email))
 
 
 def _hash_reset_code(username: str, code: str) -> str:
@@ -145,13 +121,14 @@ def create_reset_code(email: str) -> tuple[str, str] | None:
     if not username:
         return None
     code = f"{secrets.randbelow(1_000_000):06d}"
-    resets = _load_resets()
-    resets[username] = {
-        "code_hash": _hash_reset_code(username, code),
-        "expires": time.time() + RESET_CODE_TTL_SECONDS,
-        "attempts": 0,
-    }
-    _save_resets(resets)
+    with SessionLocal.begin() as session:
+        reset = session.get(PasswordReset, username)
+        if reset is None:
+            session.add(PasswordReset(username=username, code_hash=_hash_reset_code(username, code), expires=time.time() + RESET_CODE_TTL_SECONDS, attempts=0))
+        else:
+            reset.code_hash = _hash_reset_code(username, code)
+            reset.expires = time.time() + RESET_CODE_TTL_SECONDS
+            reset.attempts = 0
     return username, code
 
 
@@ -160,28 +137,24 @@ def consume_reset_code(username: str, code: str, new_password: str) -> bool:
         raise ValueError("Password must be at least 8 characters")
 
     normalized = normalize_username(username)
-    resets = _load_resets()
-    entry = resets.get(normalized)
-    if not entry or entry["expires"] < time.time():
-        return False
+    with SessionLocal.begin() as session:
+        entry = session.get(PasswordReset, normalized)
+        if not entry or entry.expires < time.time():
+            return False
 
-    # Cap guesses since a 6-digit code only has 1,000,000 combinations —
-    # far weaker than the old 32-byte token, so brute-force protection matters here.
-    if entry.get("attempts", 0) >= RESET_CODE_MAX_ATTEMPTS:
-        del resets[normalized]
-        _save_resets(resets)
-        return False
+        # Cap guesses since a 6-digit code only has 1,000,000 combinations —
+        # far weaker than the old 32-byte token, so brute-force protection matters here.
+        if entry.attempts >= RESET_CODE_MAX_ATTEMPTS:
+            session.delete(entry)
+            return False
 
-    if not hmac.compare_digest(_hash_reset_code(normalized, code), entry["code_hash"]):
-        entry["attempts"] = entry.get("attempts", 0) + 1
-        _save_resets(resets)
-        return False
+        if not hmac.compare_digest(_hash_reset_code(normalized, code), entry.code_hash):
+            entry.attempts += 1
+            return False
 
-    users = _load_users()
-    if normalized not in users:
-        return False
-    users[normalized]["password"] = _hash_password(new_password)
-    _save_users(users)
-    del resets[normalized]
-    _save_resets(resets)
-    return True
+        account = session.get(User, normalized)
+        if account is None:
+            return False
+        account.password_hash = _hash_password(new_password)
+        session.delete(entry)
+        return True

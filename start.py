@@ -1,69 +1,35 @@
-import json
 import webbrowser
-import os
 import uuid
 import csv
-import shutil
 import html
-import tempfile
 from datetime import datetime
 
-FILENAME = "expenses.json"
-BUDGET_FILENAME = "budgets.json"
-RECURRING_FILENAME = "recurring.json"
-INCOME_FILENAME = "income.json"
+from expense_tracker import storage
 
+storage.initialize_database()
+storage.set_active_user("__owner__")
 
 # ---------- Backup ----------
-
-def backup_file(filename):
-    if os.path.exists(filename):
-        backup_name = filename.replace(".json", "_backup.json")
-        shutil.copy(filename, backup_name)
-
-
-def atomic_write_json(filename, data):
-    """Write JSON to a temp file then atomically replace the target, so a
-    crash mid-write can't leave a truncated/corrupt file behind."""
-    dir_name = os.path.dirname(os.path.abspath(filename)) or "."
-    fd, tmp_path = tempfile.mkstemp(dir=dir_name, prefix=".tmp_", suffix=".json")
-    try:
-        with os.fdopen(fd, "w") as f:
-            json.dump(data, f, indent=2)
-        os.replace(tmp_path, filename)
-    except Exception:
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
-        raise
-
 
 def restore_from_backup():
     print("\nWhich file do you want to restore?")
     print("1. Expenses\n2. Budgets\n3. Recurring\n4. Income\n5. Back")
     choice = input("Choose: ").strip()
-    mapping = {
-        "1": FILENAME,
-        "2": BUDGET_FILENAME,
-        "3": RECURRING_FILENAME,
-        "4": INCOME_FILENAME
-    }
+    mapping = {"1": "expenses", "2": "budgets", "3": "recurring", "4": "income"}
     if choice == "5":
         return
     if choice not in mapping:
         print("Invalid choice.")
         return
 
-    filename = mapping[choice]
-    backup_name = filename.replace(".json", "_backup.json")
-
-    if not os.path.exists(backup_name):
-        print(f"No backup found for {filename}.")
-        return
-
-    confirm = input(f"This will overwrite {filename} with the last backup. Continue? (y/n): ").strip().lower()
+    data_type = mapping[choice]
+    confirm = input(f"This will overwrite {data_type} with the last backup. Continue? (y/n): ").strip().lower()
     if confirm == "y":
-        shutil.copy(backup_name, filename)
-        print(f"Restored {filename} from backup.")
+        try:
+            storage.restore_from_backup(data_type)
+            print(f"Restored {data_type} from backup.")
+        except FileNotFoundError:
+            print(f"No backup found for {data_type}.")
     else:
         print("Cancelled.")
 
@@ -71,51 +37,35 @@ def restore_from_backup():
 # ---------- Load / Save ----------
 
 def load_expenses():
-    if os.path.exists(FILENAME):
-        with open(FILENAME, "r") as f:
-            return json.load(f)
-    return []
+    return storage.load_expenses()
 
 
 def save_expenses(expenses):
-    backup_file(FILENAME)
-    atomic_write_json(FILENAME, expenses)
+    storage.save_expenses(expenses)
 
 
 def load_budgets():
-    if os.path.exists(BUDGET_FILENAME):
-        with open(BUDGET_FILENAME, "r") as f:
-            return json.load(f)
-    return {"overall": None, "categories": {}}
+    return storage.load_budgets()
 
 
 def save_budgets(budgets):
-    backup_file(BUDGET_FILENAME)
-    atomic_write_json(BUDGET_FILENAME, budgets)
+    storage.save_budgets(budgets)
 
 
 def load_recurring():
-    if os.path.exists(RECURRING_FILENAME):
-        with open(RECURRING_FILENAME, "r") as f:
-            return json.load(f)
-    return []
+    return storage.load_recurring()
 
 
 def save_recurring(recurring):
-    backup_file(RECURRING_FILENAME)
-    atomic_write_json(RECURRING_FILENAME, recurring)
+    storage.save_recurring(recurring)
 
 
 def load_income():
-    if os.path.exists(INCOME_FILENAME):
-        with open(INCOME_FILENAME, "r") as f:
-            return json.load(f)
-    return []
+    return storage.load_income()
 
 
 def save_income(income):
-    backup_file(INCOME_FILENAME)
-    atomic_write_json(INCOME_FILENAME, income)
+    storage.save_income(income)
 
 
 # ---------- Validated Input Helpers ----------

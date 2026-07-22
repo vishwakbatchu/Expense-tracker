@@ -13,6 +13,8 @@ from expense_tracker import storage
 from expense_tracker import core
 from api import auth
 
+storage.initialize_database()
+
 
 class UserStorageMiddleware:
     """Make a signed-in user's private data folder available to each request."""
@@ -326,16 +328,11 @@ def export_csv():
 
 @app.post("/api/backup/restore", dependencies=[require_login])
 def restore_backup(data: RestoreRequest):
-    mapping = {
-        "expenses": storage.current_data_file("expenses.json"),
-        "budgets": storage.current_data_file("budgets.json"),
-        "recurring": storage.current_data_file("recurring.json"),
-        "income": storage.current_data_file("income.json"),
-    }
+    mapping = {"expenses", "budgets", "recurring", "income"}
     if data.file not in mapping:
         raise HTTPException(status_code=400, detail="Invalid file type")
     try:
-        storage.restore_from_backup(mapping[data.file])
+        storage.restore_from_backup(data.file)
         return {"ok": True}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

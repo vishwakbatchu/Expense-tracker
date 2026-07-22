@@ -11,7 +11,7 @@ Track spending and income, set budgets, manage recurring expenses, and view repo
 - **Dashboard** — spent, income, net savings, category breakdown, budget bars
 - **Monthly comparison** — side-by-side spent vs income across recent months
 - **HTML reports & CSV export**
-- **Automatic backups** — every save is backed up; restore from the app or CLI
+- **Automatic backups** — the previous version of each record type is retained in SQLite and can be restored from the app or CLI
 
 ## Web app (website + installable PWA)
 
@@ -146,22 +146,18 @@ Menu options 1–12 match the web features (add expense, reports, CSV, budgets, 
 
 ## Data storage
 
-All data is stored locally in JSON files in the project folder:
-
-| File | Contents |
-|------|----------|
-| `expenses.json` | Expenses |
-| `income.json` | Income entries |
-| `budgets.json` | Overall and category budgets |
-| `recurring.json` | Recurring expense templates |
-
-Each file gets a `_backup.json` copy before every save.
+The application uses SQLite through SQLAlchemy. By default, the database is
+stored in `expense_tracker.db`; set `DATABASE_URL` to use a different database
+location. On first launch, existing JSON files are imported automatically, so
+current accounts and financial data are preserved.
 
 ## Project layout
 
 ```
 start.py              # CLI entry point
-expense_tracker/      # Shared business logic & storage
+database.py            # SQLAlchemy connection configuration
+models.py              # SQLite data models
+expense_tracker/       # Shared business logic & database storage
 api/main.py           # FastAPI server
 web/                  # Web UI + PWA (HTML, CSS, JS)
 requirements.txt      # fastapi, uvicorn
@@ -169,9 +165,9 @@ requirements.txt      # fastapi, uvicorn
 
 ## Tech
 
-- **CLI:** Python standard library
+- **CLI:** Python + SQLAlchemy
 - **Web:** FastAPI + vanilla HTML/CSS/JS (PWA)
-- **Data:** Local JSON files
+- **Data:** SQLite (SQLAlchemy)
 
 ---
 
