@@ -634,28 +634,27 @@ $("#register-form").addEventListener("submit", async (e) => {
     errEl.hidden = false;
   }
 });
-
-async function bootApp() {
-  const status = await api.authStatus();
-  if (!status.authenticated) {
-    showLogin();
-    return;
-  }
-  $("#logout-btn").hidden = false;
-  showApp();
-  await loadMonths();
-  setView("dashboard");
-}
-
 (async function init() {
+  const overlay = $("#wake-overlay");
+  const message = $("#wake-message");
+
+  const slowTimer = setTimeout(() => {
+    message.textContent = "Waking up the server — this can take up to a minute on first load…";
+  }, 3000);
+
   try {
     const status = await api.authStatus();
+    clearTimeout(slowTimer);
+    overlay.remove();
+
     if (!status.authenticated) {
       showLogin();
       return;
     }
     await bootApp();
   } catch (err) {
+    clearTimeout(slowTimer);
+    overlay.remove();
     showLogin();
     toast(err.message, "error");
   }
