@@ -532,12 +532,30 @@ $("#logout-btn").addEventListener("click", async () => {
 
 let forgotUsername = null;
 
+function setForgotStep(step) {
+  const emailStep = $("#forgot-step-email");
+  const resetStep = $("#forgot-step-reset");
+  const emailInput = emailStep.querySelector('[name="email"]');
+  const resetInputs = resetStep.querySelectorAll("input");
+
+  if (step === "email") {
+    emailStep.hidden = false;
+    resetStep.hidden = true;
+    emailInput.required = true;
+    resetInputs.forEach((el) => (el.required = false));
+  } else {
+    emailStep.hidden = true;
+    resetStep.hidden = false;
+    emailInput.required = false;
+    resetInputs.forEach((el) => (el.required = true));
+  }
+}
+
 $("#forgot-password-btn").addEventListener("click", () => {
   $("#forgot-error").hidden = true;
   $("#forgot-success").hidden = true;
   $("#forgot-form").reset();
-  $("#forgot-step-email").hidden = false;
-  $("#forgot-step-reset").hidden = true;
+  setForgotStep("email");
   $("#forgot-submit").textContent = "Get reset code";
   forgotUsername = null;
   $("#forgot-dialog").showModal();
@@ -559,8 +577,7 @@ $("#forgot-form").addEventListener("submit", async (e) => {
       const result = await api.forgotPassword(fd.get("email"));
       forgotUsername = result.username;
       $("#forgot-code-display").textContent = `Your reset code: ${result.code} (expires in 10 minutes)`;
-      $("#forgot-step-email").hidden = true;
-      $("#forgot-step-reset").hidden = false;
+      setForgotStep("reset");
       $("#forgot-submit").textContent = "Reset password";
     } catch (err) {
       errEl.textContent = err.message;
