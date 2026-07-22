@@ -98,6 +98,18 @@ To keep access to your original shared data as the site owner, also set these op
 | `APP_USERNAME` | Your owner username |
 | `APP_PASSWORD` | A strong owner password |
 
+### Password-reset email setup
+
+Password reset emails are sent through [Resend](https://resend.com). Create a Resend API key, then set these environment variables in your deployment (Render → Environment):
+
+| Variable | Value |
+|----------|-------|
+| `RESEND_API_KEY` | Your Resend API key |
+| `EMAIL_FROM` | A sender address allowed by Resend (the default is only suitable for testing) |
+| `APP_BASE_URL` | The public URL of this app, such as `https://your-app.onrender.com` |
+
+For local testing, export the same variables before starting Uvicorn. Never commit the API key to the repository.
+
 **Local dev:** login is always enabled. Start the app normally, then create an account from the sign-in screen. To enable an owner account for existing data:
 
 ```bash

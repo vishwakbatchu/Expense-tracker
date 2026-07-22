@@ -38,6 +38,12 @@ function setView(name) {
   state.view = name;
   document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
   $(`#view-${name}`).classList.add("active");
+  document.querySelectorAll(".sidebar-link").forEach((link) => {
+    const active = link.dataset.goto === name || (name === "recurring" || name === "compare") && link.dataset.goto === "more";
+    link.classList.toggle("active", active);
+    if (active) link.setAttribute("aria-current", "page");
+    else link.removeAttribute("aria-current");
+  });
   refreshCurrentView();
 }
 

@@ -1,0 +1,10 @@
+{
+  "supriya3": {
+    "password": "pbkdf2_sha256$600000$JqmJBSH3e4sFlI0hUvP7OA==$v8hygVlGe3uKvgMNfTZTW20SlT9m/KEoRDf2E8IrM1c=",
+    "email": "vishwakbatchu45@gmail.com"
+  },
+  "rithwik": {
+    "password": "pbkdf2_sha256$600000$wvqeo5Gs9hxflbyoxYh4lA==$BhtKhoBFekcmYFCFXIL98iputb/+VyjSkjtMGtyamvQ=",
+    "email": "vishwakbatchu45@gmail.com"
+  }
+}

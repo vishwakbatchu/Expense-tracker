@@ -9,22 +9,35 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icons/icon.svg">
-  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/styles.css?v=3">
 </head>
 <body>
   <div id="login-screen" class="login-screen" hidden>
     <div class="login-card">
-      <h1>Expense Tracker</h1>
-      <p class="login-subtitle">Sign in to continue</p>
-      <p class="login-hint" id="login-hint" hidden></p>
-      <form id="login-form">
-        <label>Username<input type="text" name="username" autocomplete="username" required></label>
-        <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
-        <p class="login-error" id="login-error" hidden></p>
-        <button type="submit" class="btn primary block">Sign in</button>
-      </form>
-      <button type="button" class="link-btn" id="create-account-btn">Create an account</button>
-      <button type="button" class="link-btn" id="forgot-password-btn">Forgot password?</button>
+      <section class="login-welcome" aria-label="Welcome">
+        <div class="brand-mark" aria-hidden="true">₹</div>
+        <div class="welcome-copy">
+          <p class="eyebrow">EXPENSE TRACKER</p>
+          <h1>Welcome back!</h1>
+          <p>Keep your spending, income, and saving goals in one calm place.</p>
+        </div>
+        <button type="button" class="welcome-register" id="create-account-btn">Create an account</button>
+      </section>
+      <section class="login-form-panel" aria-label="Sign in">
+        <div class="login-form-heading">
+          <p class="eyebrow">YOUR PERSONAL FINANCES</p>
+          <h2>Sign in</h2>
+          <p>Enter your details to continue.</p>
+        </div>
+        <p class="login-hint" id="login-hint" hidden></p>
+        <form id="login-form">
+          <label>Username<input type="text" name="username" autocomplete="username" placeholder="Enter your username" required></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required></label>
+          <p class="login-error" id="login-error" hidden></p>
+          <button type="submit" class="btn primary block">Sign in</button>
+        </form>
+        <button type="button" class="link-btn" id="forgot-password-btn">Forgot password?</button>
+      </section>
     </div>
   </div>
 
@@ -75,30 +88,20 @@
       </div>
     </header>
 
+    <aside class="sidebar" aria-label="Main navigation">
+      <p class="sidebar-label">Workspace</p>
+      <nav class="sidebar-nav">
+        <button type="button" class="sidebar-link active" data-goto="dashboard" aria-current="page"><span aria-hidden="true">⌂</span>Dashboard</button>
+        <button type="button" class="sidebar-link" data-goto="expenses"><span aria-hidden="true">▣</span>Expenses</button>
+        <button type="button" class="sidebar-link" data-goto="income"><span aria-hidden="true">↗</span>Income</button>
+        <button type="button" class="sidebar-link" data-goto="budgets"><span aria-hidden="true">◎</span>Budgets</button>
+        <button type="button" class="sidebar-link" data-goto="more"><span aria-hidden="true">⋯</span>More tools</button>
+      </nav>
+    </aside>
+
     <main class="main">
       <section id="view-dashboard" class="view active">
         <div class="stats-grid" id="stats-grid"></div>
-        <section class="dashboard-options" aria-label="Dashboard options">
-          <h2>Dashboard options</h2>
-          <div class="dashboard-option-grid">
-            <button type="button" class="dashboard-option" data-goto="expenses">
-              <span>Expenses</span>
-              <small>Add and manage spending</small>
-            </button>
-            <button type="button" class="dashboard-option" data-goto="income">
-              <span>Income</span>
-              <small>Record your earnings</small>
-            </button>
-            <button type="button" class="dashboard-option" data-goto="budgets">
-              <span>Budgets</span>
-              <small>Set spending limits</small>
-            </button>
-            <button type="button" class="dashboard-option" data-goto="more">
-              <span>More tools</span>
-              <small>Reports and recurring items</small>
-            </button>
-          </div>
-        </section>
         <div class="card" id="budget-card">
           <h2>Budget status</h2>
           <div id="budget-status"></div>

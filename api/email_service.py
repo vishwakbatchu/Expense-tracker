@@ -1,9 +1,9 @@
 import os
 import resend
 
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-EMAIL_FROM = os.environ.get("EMAIL_FROM", "onboarding@resend.dev")
-APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:8000")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "onboarding@resend.dev").strip()
+APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:8000").rstrip("/")
 
 
 def send_password_reset_email(to_email: str, token: str) -> None:
@@ -12,6 +12,9 @@ def send_password_reset_email(to_email: str, token: str) -> None:
 
     resend.api_key = RESEND_API_KEY
     reset_link = f"{APP_BASE_URL}/reset-password.html?token={token}"
+
+    if not EMAIL_FROM or not APP_BASE_URL:
+        raise RuntimeError("Email service is not configured (missing EMAIL_FROM or APP_BASE_URL)")
 
     resend.Emails.send({
         "from": EMAIL_FROM,
