@@ -530,10 +530,16 @@ $("#logout-btn").addEventListener("click", async () => {
   showLogin();
 });
 
+let forgotUsername = null;
+
 $("#forgot-password-btn").addEventListener("click", () => {
   $("#forgot-error").hidden = true;
   $("#forgot-success").hidden = true;
   $("#forgot-form").reset();
+  $("#forgot-step-email").hidden = false;
+  $("#forgot-step-reset").hidden = true;
+  $("#forgot-submit").textContent = "Get reset code";
+  forgotUsername = null;
   $("#forgot-dialog").showModal();
 });
 $("#forgot-close").addEventListener("click", () => {
@@ -546,10 +552,37 @@ $("#forgot-form").addEventListener("submit", async (e) => {
   const successEl = $("#forgot-success");
   errEl.hidden = true;
   successEl.hidden = true;
+
+  if (!forgotUsername) {
+    // Step 1: look up the account and generate a code (no email is sent).
+    try {
+      const result = await api.forgotPassword(fd.get("email"));
+      forgotUsername = result.username;
+      $("#forgot-code-display").textContent = `Your reset code: ${result.code} (expires in 10 minutes)`;
+      $("#forgot-step-email").hidden = true;
+      $("#forgot-step-reset").hidden = false;
+      $("#forgot-submit").textContent = "Reset password";
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+    return;
+  }
+
+  // Step 2: verify the code and set the new password.
+  const password = fd.get("password");
+  const confirmPassword = fd.get("confirm_password");
+  if (password !== confirmPassword) {
+    errEl.textContent = "Passwords do not match";
+    errEl.hidden = false;
+    return;
+  }
   try {
-    await api.forgotPassword(fd.get("email"));
-    successEl.textContent = "If that email is registered, a reset link has been sent.";
+    await api.resetPassword(forgotUsername, fd.get("code"), password);
+    successEl.textContent = "Password reset! You can now sign in.";
     successEl.hidden = false;
+    $("#forgot-step-reset").hidden = true;
+    forgotUsername = null;
   } catch (err) {
     errEl.textContent = err.message;
     errEl.hidden = false;
