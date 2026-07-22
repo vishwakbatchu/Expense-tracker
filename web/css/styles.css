@@ -76,7 +76,10 @@ body {
   text-transform: uppercase;
 }
 
-.sidebar-nav { display: grid; gap: 5px; }
+.sidebar-nav {
+  display: grid;
+  gap: 5px;
+}
 
 .sidebar-link {
   display: flex;
@@ -95,9 +98,24 @@ body {
   text-align: left;
 }
 
-.sidebar-link span { width: 18px; color: var(--primary); font-size: 1.1rem; text-align: center; }
-.sidebar-link:hover { background: var(--bg); color: var(--text); }
-.sidebar-link.active { background: linear-gradient(100deg, #eceaff, #f5f2ff); border-color: #d9d4ff; color: var(--primary-hover); box-shadow: 0 6px 16px rgba(102, 87, 232, 0.1); }
+.sidebar-link span {
+  width: 18px;
+  color: var(--primary);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.sidebar-link:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sidebar-link.active {
+  background: linear-gradient(100deg, #eceaff, #f5f2ff);
+  border-color: #d9d4ff;
+  color: var(--primary-hover);
+  box-shadow: 0 6px 16px rgba(102, 87, 232, 0.1);
+}
 
 .header-top {
   display: flex;
@@ -156,8 +174,19 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.login-welcome::before { width: 260px; height: 260px; right: -135px; bottom: -125px; }
-.login-welcome::after { width: 84px; height: 84px; left: -38px; top: 42px; }
+.login-welcome::before {
+  width: 260px;
+  height: 260px;
+  right: -135px;
+  bottom: -125px;
+}
+
+.login-welcome::after {
+  width: 84px;
+  height: 84px;
+  left: -38px;
+  top: 42px;
+}
 
 .brand-mark {
   position: absolute;
@@ -187,7 +216,7 @@ body {
   line-height: 1.1;
 }
 
-.welcome-copy > p:last-child {
+.welcome-copy>p:last-child {
   max-width: 290px;
   margin: 18px 0 0;
   color: rgba(255, 255, 255, 0.82);
@@ -206,7 +235,9 @@ body {
   font-weight: 700;
 }
 
-.welcome-register:hover { background: rgba(255, 255, 255, 0.14); }
+.welcome-register:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
 
 .login-form-panel {
   display: flex;
@@ -216,10 +247,22 @@ body {
   background: #fff;
 }
 
-.login-form-heading { margin-bottom: 28px; }
-.login-form-heading .eyebrow { color: var(--primary); }
-.login-form-heading h2 { color: var(--text); }
-.login-form-heading > p:last-child { margin: 10px 0 0; color: var(--muted-fg); }
+.login-form-heading {
+  margin-bottom: 28px;
+}
+
+.login-form-heading .eyebrow {
+  color: var(--primary);
+}
+
+.login-form-heading h2 {
+  color: var(--text);
+}
+
+.login-form-heading>p:last-child {
+  margin: 10px 0 0;
+  color: var(--muted-fg);
+}
 
 #login-form {
   display: flex;
@@ -249,7 +292,10 @@ body {
   border-color: var(--primary);
 }
 
-#login-form .btn { margin-top: 6px; border-radius: 999px; }
+#login-form .btn {
+  margin-top: 6px;
+  border-radius: 999px;
+}
 
 .login-error {
   color: var(--danger);
@@ -281,7 +327,9 @@ body {
   text-decoration: underline;
 }
 
-.login-form-panel .link-btn { margin-top: 18px; }
+.login-form-panel .link-btn {
+  margin-top: 18px;
+}
 
 #forgot-dialog,
 #register-dialog {
@@ -403,8 +451,13 @@ input[type="date"] {
   background: var(--accent-soft);
 }
 
-.stat-card:nth-child(2)::after { background: #eeecff; }
-.stat-card:nth-child(3)::after { background: #e4f8f1; }
+.stat-card:nth-child(2)::after {
+  background: #eeecff;
+}
+
+.stat-card:nth-child(3)::after {
+  background: #e4f8f1;
+}
 
 .stat-card.full {
   grid-column: 1 / -1;
@@ -423,8 +476,13 @@ input[type="date"] {
   margin-top: 4px;
 }
 
-.stat-value.positive { color: var(--success); }
-.stat-value.negative { color: var(--danger); }
+.stat-value.positive {
+  color: var(--success);
+}
+
+.stat-value.negative {
+  color: var(--danger);
+}
 
 .card {
   background: var(--surface);
@@ -447,7 +505,9 @@ input[type="date"] {
   margin-bottom: 14px;
 }
 
-.toolbar-spacer { flex: 1; }
+.toolbar-spacer {
+  flex: 1;
+}
 
 .btn {
   border: 1px solid var(--border);
@@ -461,7 +521,9 @@ input[type="date"] {
   transition: background 0.15s, transform 0.1s;
 }
 
-.btn:active { transform: scale(0.98); }
+.btn:active {
+  transform: scale(0.98);
+}
 
 .btn.primary {
   background: var(--primary);
@@ -469,7 +531,9 @@ input[type="date"] {
   color: #fff;
 }
 
-.btn.primary:hover { background: var(--primary-hover); }
+.btn.primary:hover {
+  background: var(--primary-hover);
+}
 
 .btn.danger {
   color: var(--danger);
@@ -514,7 +578,10 @@ input[type="date"] {
   box-shadow: var(--shadow);
 }
 
-.list-item-main { flex: 1; min-width: 0; }
+.list-item-main {
+  flex: 1;
+  min-width: 0;
+}
 
 .list-item-title {
   font-weight: 600;
@@ -556,7 +623,9 @@ input[type="date"] {
   margin-bottom: 8px;
 }
 
-.inline-form input { min-width: 120px; }
+.inline-form input {
+  min-width: 120px;
+}
 
 .hint {
   font-size: 0.8125rem;
@@ -575,7 +644,9 @@ input[type="date"] {
 }
 
 .budget-row:last-child,
-.category-row:last-child { border-bottom: none; }
+.category-row:last-child {
+  border-bottom: none;
+}
 
 .budget-bar-wrap {
   flex: 1;
@@ -593,7 +664,9 @@ input[type="date"] {
   transition: width 0.3s;
 }
 
-.budget-bar.over { background: var(--danger); }
+.budget-bar.over {
+  background: var(--danger);
+}
 
 .badge {
   display: inline-block;
@@ -643,8 +716,13 @@ input[type="date"] {
   min-width: 4px;
 }
 
-.compare-bar.spent { background: #f87171; }
-.compare-bar.earned { background: #34d399; }
+.compare-bar.spent {
+  background: #f87171;
+}
+
+.compare-bar.earned {
+  background: #34d399;
+}
 
 .restore-grid {
   display: grid;
@@ -787,8 +865,15 @@ input[type="date"] {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .footer-note {
@@ -804,7 +889,7 @@ input[type="date"] {
   font-size: 0.75rem;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 901px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -814,8 +899,16 @@ input[type="date"] {
   }
 }
 
-@media (max-width: 680px) {
-  #app { display: flex; max-width: 100%; }
+/* Some Android browsers report a CSS viewport wider than the physical screen.
+   Use the compact layout up to tablet width so the dashboard never gets
+   trapped beside a half-width sidebar. */
+@media (max-width: 900px) {
+  #app {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+  }
+
   .sidebar {
     order: 2;
     position: fixed;
@@ -828,19 +921,54 @@ input[type="date"] {
     border-right: none;
     box-shadow: 0 -4px 18px rgba(15, 118, 110, 0.1);
   }
-  .sidebar-label { display: none; }
-  .sidebar-nav { grid-template-columns: repeat(5, 1fr); gap: 2px; }
-  .sidebar-link { flex-direction: column; gap: 1px; justify-content: center; padding: 5px 2px; font-size: 0.68rem; text-align: center; }
-  .sidebar-link span { font-size: 1rem; }
-  .main { order: 1; padding: 16px 16px 86px; }
-  .login-screen { padding: 16px; }
+
+  .sidebar-label {
+    display: none;
+  }
+
+  .sidebar-nav {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+  }
+
+  .sidebar-link {
+    flex-direction: column;
+    gap: 1px;
+    justify-content: center;
+    padding: 5px 2px;
+    font-size: 0.68rem;
+    text-align: center;
+  }
+
+  .sidebar-link span {
+    font-size: 1rem;
+  }
+
+  .main {
+    order: 1;
+    padding: 16px 16px 86px;
+  }
+
+  .login-screen {
+    padding: 16px;
+  }
 
   .login-card {
     min-height: auto;
     grid-template-columns: 1fr;
   }
 
-  .login-welcome { min-height: 280px; padding: 42px 32px; }
-  .login-form-panel { padding: 36px 32px; }
-  .welcome-copy h1, .login-form-heading h2 { font-size: 2rem; }
+  .login-welcome {
+    min-height: 280px;
+    padding: 42px 32px;
+  }
+
+  .login-form-panel {
+    padding: 36px 32px;
+  }
+
+  .welcome-copy h1,
+  .login-form-heading h2 {
+    font-size: 2rem;
+  }
 }
