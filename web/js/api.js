@@ -48,10 +48,10 @@ const api = {
       method: "POST",
       body: JSON.stringify({ email }),
     }),
-  resetPassword: (token, password) =>
+  resetPassword: (username, code, password) =>
     request("/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify({ token, password }),
+      body: JSON.stringify({ username, code, password }),
     }),
 
   getExpenses: (month, search) => {
