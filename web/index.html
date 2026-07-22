@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -11,6 +12,7 @@
   <link rel="apple-touch-icon" href="/icons/icon.svg">
   <link rel="stylesheet" href="/css/styles.css?v=3">
 </head>
+
 <body>
   <div id="login-screen" class="login-screen" hidden>
     <div class="login-card">
@@ -31,8 +33,10 @@
         </div>
         <p class="login-hint" id="login-hint" hidden></p>
         <form id="login-form">
-          <label>Username<input type="text" name="username" autocomplete="username" placeholder="Enter your username" required></label>
-          <label>Password<input type="password" name="password" autocomplete="current-password" placeholder="Enter your password" required></label>
+          <label>Username<input type="text" name="username" autocomplete="username" placeholder="Enter your username"
+              required></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password"
+              placeholder="Enter your password" required></label>
           <p class="login-error" id="login-error" hidden></p>
           <button type="submit" class="btn primary block">Sign in</button>
         </form>
@@ -50,9 +54,12 @@
       </div>
       <div id="forgot-step-reset" hidden>
         <p class="hint" id="forgot-code-display"></p>
-        <label>Reset code<input type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code" required></label>
-        <label>New password<input type="password" name="password" autocomplete="new-password" required minlength="8"></label>
-        <label>Confirm new password<input type="password" name="confirm_password" autocomplete="new-password" required minlength="8"></label>
+        <label>Reset code<input type="text" name="code" inputmode="numeric" pattern="\d{6}" maxlength="6"
+            autocomplete="one-time-code" required></label>
+        <label>New password<input type="password" name="password" autocomplete="new-password" required
+            minlength="8"></label>
+        <label>Confirm new password<input type="password" name="confirm_password" autocomplete="new-password" required
+            minlength="8"></label>
       </div>
       <p class="login-error" id="forgot-error" hidden></p>
       <p class="hint" id="forgot-success" hidden></p>
@@ -70,7 +77,8 @@
       <label>Username<input type="text" name="username" autocomplete="username" required></label>
       <label>Email<input type="email" name="email" autocomplete="email" required></label>
       <label>Password<input type="password" name="password" autocomplete="new-password" required minlength="8"></label>
-      <label>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" required minlength="8"></label>
+      <label>Confirm password<input type="password" name="confirm_password" autocomplete="new-password" required
+          minlength="8"></label>
       <p class="login-error" id="register-error" hidden></p>
       <div class="modal-actions">
         <button type="button" class="btn" id="register-cancel">Cancel</button>
@@ -99,8 +107,10 @@
     <aside class="sidebar" aria-label="Main navigation">
       <p class="sidebar-label">Workspace</p>
       <nav class="sidebar-nav">
-        <button type="button" class="sidebar-link active" data-goto="dashboard" aria-current="page"><span aria-hidden="true">⌂</span>Dashboard</button>
-        <button type="button" class="sidebar-link" data-goto="expenses"><span aria-hidden="true">▣</span>Expenses</button>
+        <button type="button" class="sidebar-link active" data-goto="dashboard" aria-current="page"><span
+            aria-hidden="true">⌂</span>Dashboard</button>
+        <button type="button" class="sidebar-link" data-goto="expenses"><span
+            aria-hidden="true">▣</span>Expenses</button>
         <button type="button" class="sidebar-link" data-goto="income"><span aria-hidden="true">↗</span>Income</button>
         <button type="button" class="sidebar-link" data-goto="budgets"><span aria-hidden="true">◎</span>Budgets</button>
         <button type="button" class="sidebar-link" data-goto="more"><span aria-hidden="true">⋯</span>More tools</button>
