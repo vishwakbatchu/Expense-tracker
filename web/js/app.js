@@ -646,8 +646,7 @@ async function bootApp() {
   setView("dashboard");
 }
 
-(async function init() {
-  const overlay = $("#wake-overlay");
+
 (async function init() {
   const overlay = $("#wake-overlay");
   const message = $("#wake-message");
