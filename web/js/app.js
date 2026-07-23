@@ -633,7 +633,21 @@ $("#register-form").addEventListener("submit", async (e) => {
     errEl.textContent = err.message;
     errEl.hidden = false;
   }
-});
+}); 
+async function bootApp() {
+  const status = await api.authStatus();
+  if (!status.authenticated) {
+    showLogin();
+    return;
+  }
+  $("#logout-btn").hidden = false;
+  showApp();
+  await loadMonths();
+  setView("dashboard");
+}
+
+(async function init() {
+  const overlay = $("#wake-overlay");
 (async function init() {
   const overlay = $("#wake-overlay");
   const message = $("#wake-message");
