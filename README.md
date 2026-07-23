@@ -14,15 +14,7 @@ Track spending and income, set budgets, manage recurring expenses, and view repo
   ![Mobile view](docs/screenshot-mobile.png)
 -->
 
-## Why I built this
 
-*(Replace this paragraph with 3–5 sentences on your actual motivation and the most interesting problem you solved. A few prompts to answer:)*
-
-- What made you pick a multi-surface app (CLI + web + PWA) instead of just a script?
-- What was the hardest part — auth? migrating from JSON files to SQLite/Postgres? the offline PWA shell?
-- Any tradeoff you'd make differently next time?
-
-This section is what separates a feature list from a story an interviewer remembers.
 
 ## Features
 
