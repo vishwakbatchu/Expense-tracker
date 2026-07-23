@@ -135,10 +135,7 @@ requirements.txt       # fastapi, uvicorn
 Full deployment instructions (Render setup, environment variables, email config, ngrok for quick sharing) live in [DEPLOYMENT.md](./DEPLOYMENT.md) to keep this README focused on the project itself.
 
 ---
-
-Built while studying Python and AI/ML — *(optionally add: as a way to learn FastAPI, SQLAlchemy migrations, and PWA basics hands-on.)*# Deployment guide
-
-Put the app on the internet so **anyone** can open it with a link. [Render](https://render.com) free tier is the easiest option.
+Deployment 
 
 ## Step 1 — Push code to GitHub
 
