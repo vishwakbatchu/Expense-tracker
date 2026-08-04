@@ -18,8 +18,25 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname.startsWith("/api/")) return;
   if (event.request.method !== "GET") return;
 
-  // Always fetch fresh app code so login protection stays in sync.
   event.respondWith(
-    fetch(event.request).catch(() => caches.open(CACHE).then((c) => c.match(event.request)))
+    fetch(event.request)
+      .then((response) => {
+        // Cache a copy of the fresh response for offline fallback.
+        const copy = response.clone();
+        caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+        return response;
+      })
+      .catch(() =>
+        caches.open(CACHE).then((cache) =>
+          cache.match(event.request).then((cached) => {
+            // Always resolve to a real Response, even on total cache miss.
+            return cached || new Response("Offline", {
+              status: 503,
+              statusText: "Offline",
+              headers: { "Content-Type": "text/plain" },
+            });
+          })
+        )
+      )
   );
 });
