@@ -22,6 +22,7 @@ class Expense(Base):
     date: Mapped[str] = mapped_column(String(10), index=True)
     category: Mapped[str] = mapped_column(String(255))
     amount: Mapped[float] = mapped_column(Float)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
     recurring: Mapped[bool] = mapped_column(Boolean, default=False)
     recurring_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
 
