@@ -202,13 +202,13 @@ def migrate_legacy_json() -> None:
                     session.add(Expense(id=item["id"], user_id=user_id, date=item["date"], category=item["category"], amount=float(item["amount"]), recurring=bool(item.get("recurring", False)), recurring_id=item.get("recurring_id")))
             if files["income"].exists():
                 for item in json.loads(files["income"].read_text()):
-                    session.add(Income(id=item["id"], user_id=user_id, date=item["date"], source=item.get("source", "Other"), amount=float(item["amount"])))
-            if files["budgets"].exists():
+             if files["budgets"].exists():
                 item = json.loads(files["budgets"].read_text())
                 if isinstance(item, dict):
                     session.add(Budget(user_id=user_id, overall=item.get("overall")))
-                for category, amount in item.get("categories", {}).items():
-                    session.add(CategoryBudget(user_id=user_id, category=category, amount=float(amount)))
+                    for category, amount in item.get("categories", {}).items():
+                        session.add(CategoryBudget(user_id=user_id, category=category, amount=float(amount)))session.add(Income(id=item["id"], user_id=user_id, date=item["date"], source=item.get("source", "Other"), amount=float(item["amount"])))
+           
             if files["recurring"].exists():
                 for item in json.loads(files["recurring"].read_text()):
                     session.add(RecurringExpense(id=item["id"], user_id=user_id, category=item["category"], amount=float(item["amount"]), day=int(item["day"])))
