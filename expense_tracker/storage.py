@@ -205,7 +205,8 @@ def migrate_legacy_json() -> None:
                     session.add(Income(id=item["id"], user_id=user_id, date=item["date"], source=item.get("source", "Other"), amount=float(item["amount"])))
             if files["budgets"].exists():
                 item = json.loads(files["budgets"].read_text())
-                session.add(Budget(user_id=user_id, overall=item.get("overall")))
+                if isinstance(item, dict):
+                    session.add(Budget(user_id=user_id, overall=item.get("overall")))
                 for category, amount in item.get("categories", {}).items():
                     session.add(CategoryBudget(user_id=user_id, category=category, amount=float(amount)))
             if files["recurring"].exists():
