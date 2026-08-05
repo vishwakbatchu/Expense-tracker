@@ -12,7 +12,6 @@ from datetime import datetime
 from expense_tracker import storage
 from expense_tracker import core
 from api import auth
-from expense_tracker import category_classifier, anomaly_detector
 storage.initialize_database()
 
 class CategorySuggestRequest(BaseModel):
@@ -342,23 +341,23 @@ def restore_backup(data: RestoreRequest):
 
 @app.get("/api/ml/category/status", dependencies=[require_login])
 def category_model_status():
+    from expense_tracker import category_classifier
     return category_classifier.train_status()
-
 
 @app.post("/api/ml/category/suggest", dependencies=[require_login])
 def category_suggest(data: CategorySuggestRequest):
+    from expense_tracker import category_classifier
     return category_classifier.predict_category(data.description)
-
 
 @app.get("/api/ml/category/evaluate", dependencies=[require_login])
 def category_model_evaluate():
+    from expense_tracker import category_classifier
     return category_classifier.evaluate_model()
-
 
 @app.get("/api/ml/anomalies", dependencies=[require_login])
 def list_anomalies():
+    from expense_tracker import anomaly_detector
     return anomaly_detector.detect_anomalies()
-
 
 static_dir = os.path.join(os.path.dirname(__file__), "..", "web")
 if os.path.isdir(static_dir):
