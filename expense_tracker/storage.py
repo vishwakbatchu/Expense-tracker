@@ -33,12 +33,15 @@ def _current_user() -> str:
         raise RuntimeError("Database access requires an authenticated user")
     return user
 
-
 def _ensure_user(session, username: str) -> None:
-    # APP_USERNAME remains a supported deployment option. Its data is owned by
-    # this internal account, never shared with registered users.
-    if username == "__owner__" and session.get(User, username) is None:
-        session.add(User(username=username, password_hash="external-auth", email="owner@local"))
+    if session.get(User, username) is None:
+        # Create a placeholder so foreign keys never fail.
+        # Real accounts are created via registration; this is only a safety net.
+        session.add(User(
+            username=username,
+            password_hash="placeholder",
+            email=f"{username}@local",
+        ))
         session.flush()
 
 
