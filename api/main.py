@@ -12,10 +12,12 @@ from datetime import datetime
 from expense_tracker import storage
 from expense_tracker import core
 from api import auth
-
+from expense_tracker import category_classifier, anomaly_detector
 storage.initialize_database()
 
-
+class CategorySuggestRequest(BaseModel):
+    description: str
+    
 class UserStorageMiddleware:
     """Make a signed-in user's private data folder available to each request."""
 
@@ -81,6 +83,7 @@ class ExpenseData(BaseModel):
     date: str
     category: str
     amount: float = Field(gt=0)
+    description: Optional[str] = None
 
 
     @field_validator("date")
@@ -336,6 +339,25 @@ def restore_backup(data: RestoreRequest):
         return {"ok": True}
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+@app.get("/api/ml/category/status", dependencies=[require_login])
+def category_model_status():
+    return category_classifier.train_status()
+
+
+@app.post("/api/ml/category/suggest", dependencies=[require_login])
+def category_suggest(data: CategorySuggestRequest):
+    return category_classifier.predict_category(data.description)
+
+
+@app.get("/api/ml/category/evaluate", dependencies=[require_login])
+def category_model_evaluate():
+    return category_classifier.evaluate_model()
+
+
+@app.get("/api/ml/anomalies", dependencies=[require_login])
+def list_anomalies():
+    return anomaly_detector.detect_anomalies()
 
 
 static_dir = os.path.join(os.path.dirname(__file__), "..", "web")
