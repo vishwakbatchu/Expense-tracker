@@ -9,7 +9,7 @@ import os
 from contextvars import ContextVar
 from pathlib import Path
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from database import Base, SessionLocal, engine
 from models import BackupSnapshot, Budget, CategoryBudget, Expense, Income, LegacyImport, RecurringExpense, User
@@ -43,7 +43,7 @@ def _ensure_user(session, username: str) -> None:
 
 
 def _expense_dict(row: Expense) -> dict:
-    result = {"id": row.id, "date": row.date, "category": row.category, "amount": row.amount}
+    result = {"id": row.id, "date": row.date, "category": row.category, "amount": row.amount, "description": row.description,}
     if row.recurring:
         result["recurring"] = True
         result["recurring_id"] = row.recurring_id
@@ -92,10 +92,19 @@ def save_expenses(expenses):
         for item in expenses:
             session.add(Expense(
                 id=item["id"], user_id=user_id, date=item["date"], category=item["category"],
-                amount=float(item["amount"]), recurring=bool(item.get("recurring", False)),
+                amount=float(item["amount"]), description=item.get("description"),recurring=bool(item.get("recurring", False)),
                 recurring_id=item.get("recurring_id"),
             ))
 
+def _ensure_expense_description_column() -> None:
+    """Adds the description column to an existing expenses table if it's missing."""
+    inspector = inspect(engine)
+    if "expenses" not in inspector.get_table_names():
+        return  # create_all will handle brand-new tables
+    columns = {col["name"] for col in inspector.get_columns("expenses")}
+    if "description" not in columns:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE expenses ADD COLUMN description VARCHAR(500)"))
 
 def load_income():
     user_id = _current_user()
@@ -201,7 +210,7 @@ def migrate_legacy_json() -> None:
                 data = json.loads(files["expenses"].read_text())
                 if isinstance(data, list):
                     for item in data:
-                        session.add(Expense(id=item["id"], user_id=user_id, date=item["date"], category=item["category"], amount=float(item["amount"]), recurring=bool(item.get("recurring", False)), recurring_id=item.get("recurring_id")))
+                        session.add(Expense(id=item["id"], user_id=user_id, date=item["date"], category=item["category"], amount=float(item["amount"]),description=item.get("description"), recurring=bool(item.get("recurring", False)), recurring_id=item.get("recurring_id")))
 
             if files["income"].exists():
                 data = json.loads(files["income"].read_text())
@@ -227,5 +236,6 @@ def migrate_legacy_json() -> None:
 
 def initialize_database() -> None:
     Base.metadata.create_all(bind=engine)
+    _ensure_expense_description_column()
     migrate_legacy_json()
 
