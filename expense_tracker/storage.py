@@ -9,7 +9,7 @@ import os
 from contextvars import ContextVar
 from pathlib import Path
 
-from sqlalchemy import select, text
+from sqlalchemy import select, text, inspect
 
 from database import Base, SessionLocal, engine
 from models import BackupSnapshot, Budget, CategoryBudget, Expense, Income, LegacyImport, RecurringExpense, User
