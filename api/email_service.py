@@ -27,3 +27,22 @@ def send_password_reset_email(to_email: str, token: str) -> None:
             f"<p>If you didn't request this, you can ignore this email.</p>"
         ),
     })
+
+
+def send_password_reset_code(to_email: str, code: str) -> None:
+    if not RESEND_API_KEY:
+        raise RuntimeError("Email service is not configured (missing RESEND_API_KEY)")
+
+    resend.api_key = RESEND_API_KEY
+
+    resend.Emails.send({
+        "from": EMAIL_FROM,
+        "to": [to_email],
+        "subject": "Your Expense Tracker reset code",
+        "html": (
+            f"<p>Your password reset code is:</p>"
+            f"<p style=\"font-size:24px;font-weight:bold;\">{code}</p>"
+            f"<p>This code expires in 10 minutes. If you didn't request this, "
+            f"you can ignore this email.</p>"
+        ),
+    })
