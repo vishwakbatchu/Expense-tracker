@@ -116,8 +116,18 @@
         <button type="button" class="sidebar-link" data-goto="expenses"><span
             aria-hidden="true">▣</span>Expenses</button>
         <button type="button" class="sidebar-link" data-goto="income"><span aria-hidden="true">↗</span>Income</button>
-        <button type="button" class="sidebar-link" data-goto="budgets"><span aria-hidden="true">◎</span>Budgets</button>
-        <button type="button" class="sidebar-link" data-goto="more"><span aria-hidden="true">⋯</span>More tools</button>
+       <button type="button" class="sidebar-link" data-goto="budgets">
+  <span aria-hidden="true">◎</span>Budgets
+</button>
+<button type="button" class="sidebar-link" data-goto="anomalies">
+  <span aria-hidden="true">⚠</span>Anomalies
+</button>
+<button type="button" class="sidebar-link" data-goto="ml-status">
+  <span aria-hidden="true">🤖</span>ML Status
+</button>
+<button type="button" class="sidebar-link" data-goto="more">
+  <span aria-hidden="true">⋯</span>More tools
+</button>
       </nav>
     </aside>
 
@@ -194,6 +204,31 @@
         </div>
         <div class="card" id="comparison-chart"></div>
       </section>
+
+      <!-- Anomalies View -->
+<section id="view-anomalies" class="view">
+  <div class="card">
+    <h2>Unusual Expenses</h2>
+    <p class="hint">Detected using Isolation Forest / Z-score</p>
+    <div id="anomalies-list"></div>
+  </div>
+</section>
+
+<!-- ML Status View -->
+<section id="view-ml-status" class="view">
+  <div class="card">
+    <h2>Category Model Status</h2>
+    <div id="ml-status-card"></div>
+  </div>
+  <div class="card">
+    <h2>Model Evaluation</h2>
+    <div id="ml-evaluate-card"></div>
+  </div>
+  <div class="card">
+    <h2>Insights</h2>
+    <div id="ml-insights"></div>
+  </div>
+</section>
 
       <section id="view-more" class="view">
         <div class="card actions-card">
