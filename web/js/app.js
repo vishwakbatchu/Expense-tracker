@@ -571,20 +571,18 @@ $("#forgot-form").addEventListener("submit", async (e) => {
   errEl.hidden = true;
   successEl.hidden = true;
 
-  if (!forgotUsername) {
-    // Step 1: look up the account and generate a code (no email is sent).
-    try {
-      const result = await api.forgotPassword(fd.get("email"));
-      forgotUsername = result.username;
-      $("#forgot-code-display").textContent = `Your reset code: ${result.code} (expires in 10 minutes)`;
-      setForgotStep("reset");
-      $("#forgot-submit").textContent = "Reset password";
-    } catch (err) {
-      errEl.textContent = err.message;
-      errEl.hidden = false;
-    }
-    return;
+if (!forgotUsername) {
+  try {
+    await api.forgotPassword(fd.get("email"));
+    $("#forgot-code-display").textContent = "If that email is registered, we've sent a reset code to it.";
+    setForgotStep("reset");
+    $("#forgot-submit").textContent = "Reset password";
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.hidden = false;
   }
+  return;
+}
 
   // Step 2: verify the code and set the new password.
   const password = fd.get("password");
@@ -595,7 +593,7 @@ $("#forgot-form").addEventListener("submit", async (e) => {
     return;
   }
   try {
-    await api.resetPassword(forgotUsername, fd.get("code"), password);
+    await api.resetPassword(fd.get("Username"), fd.get("code"), password);
     successEl.textContent = "Password reset! You can now sign in.";
     successEl.hidden = false;
     $("#forgot-step-reset").hidden = true;
