@@ -106,4 +106,14 @@ const api = {
     const q = month ? `?month=${month}` : "";
     return `${API}/report${q}`;
   },
+
+  // ===== ML endpoints =====
+  mlCategoryStatus: () => request("/ml/category/status"),
+  mlCategorySuggest: (description) =>
+    request("/ml/category/suggest", {
+      method: "POST",
+      body: JSON.stringify({ description }),
+    }),
+  mlCategoryEvaluate: () => request("/ml/category/evaluate"),
+  mlAnomalies: () => request("/ml/anomalies"),
 };
