@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import time
+import email_service
 
 from fastapi import HTTPException, Request
 from sqlalchemy import select
@@ -110,16 +111,17 @@ def _hash_reset_code(username: str, code: str) -> str:
     return hashlib.sha256(f"{username}:{code}".encode()).hexdigest()
 
 
-def create_reset_code(email: str) -> tuple[str, str] | None:
-    """Generate a 6-digit reset code for the account matching this email.
 
-    Returns (username, code) so the caller can display the code directly on
-    the page — no email is sent. Returns None if no account matches the
-    email address given.
+def create_reset_code(email: str) -> str | None:
+    """Generate a 6-digit reset code and email it to the account's address.
+
+    Returns the username if an account matched, or None if no account
+    matches the given email.
     """
     username = _find_username_by_email(email)
     if not username:
         return None
+    normalized_email = normalize_email(email)
     code = f"{secrets.randbelow(1_000_000):06d}"
     with SessionLocal.begin() as session:
         reset = session.get(PasswordReset, username)
@@ -129,7 +131,8 @@ def create_reset_code(email: str) -> tuple[str, str] | None:
             reset.code_hash = _hash_reset_code(username, code)
             reset.expires = time.time() + RESET_CODE_TTL_SECONDS
             reset.attempts = 0
-    return username, code
+    email_service.send_password_reset_code(normalized_email, code)
+    return username
 
 
 def consume_reset_code(username: str, code: str, new_password: str) -> bool:
