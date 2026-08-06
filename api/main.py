@@ -178,13 +178,9 @@ def logout(request: Request):
 
 @app.post("/api/auth/forgot-password")
 def forgot_password(data: ForgotPasswordRequest):
-    result = auth.create_reset_code(data.email)
-    if not result:
-        raise HTTPException(status_code=404, detail="No account found with that email")
-    username, code = result
-    # No email is sent — the code is returned directly so the frontend can show it.
-    return {"ok": True, "username": username, "code": code}
-
+    auth.create_reset_code(data.email)
+    # Always the same response, whether or not the email is registered.
+    return {"ok": True}
 
 @app.post("/api/auth/reset-password")
 def reset_password(data: ResetPasswordRequest):
