@@ -343,6 +343,7 @@ modalForm.addEventListener("submit", async (e) => {
         date: fd.get("date"),
         category: fd.get("category"),
         amount: Number(fd.get("amount")),
+        description: fd.get("description") || null,
       };
       if (modalId) {
         const res = await api.updateExpense(modalId, payload);
