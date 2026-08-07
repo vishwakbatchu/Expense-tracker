@@ -216,7 +216,7 @@ def create_expense(data: ExpenseCreate):
 def update_expense(expense_id: str, data: ExpenseUpdate):
     try:
         expense, warnings = core.update_expense(
-            expense_id, data.date, data.category, data.amount
+            expense_id, data.date, data.category, data.amount, data.description
         )
         return {"expense": expense, "warnings": warnings}
     except ValueError as e:
