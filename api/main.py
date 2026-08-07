@@ -206,7 +206,7 @@ def list_expenses(month: Optional[str] = None, search: Optional[str] = None):
 @app.post("/api/expenses", dependencies=[require_login])
 def create_expense(data: ExpenseCreate):
     try:
-        expense, warnings = core.add_expense(data.date, data.category, data.amount)
+        expense, warnings = core.add_expense(data.date, data.category, data.amount, data.description)
         return {"expense": expense, "warnings": warnings}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
