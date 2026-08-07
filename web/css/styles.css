@@ -1142,3 +1142,247 @@ input[type="date"] {
   color: #5b21b6;
   font-size: 0.85rem;
 }
+/* ===== Stronger mobile responsive styles ===== */
+
+@media (max-width: 900px) {
+  /* App shell */
+  #app {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    min-height: 100dvh;
+  }
+
+  .header {
+    padding: 12px 14px 10px;
+  }
+
+  .logo {
+    font-size: 1.1rem;
+  }
+
+  .month-filter {
+    margin-top: 8px;
+  }
+
+  /* Bottom navigation */
+  .sidebar {
+    order: 2;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    padding: 6px 4px calc(6px + var(--safe-bottom));
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    border-right: none;
+    box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.08);
+  }
+
+  .sidebar-label {
+    display: none;
+  }
+
+  .sidebar-nav {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2px;
+  }
+
+  .sidebar-link {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 2px;
+    min-height: 52px;
+    font-size: 0.62rem;
+    font-weight: 650;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .sidebar-link span {
+    font-size: 1.05rem;
+    width: auto;
+  }
+
+  .sidebar-link.active {
+    background: #f3e8ff;
+    border-color: transparent;
+    color: var(--primary);
+  }
+
+  /* Main content */
+  .main {
+    order: 1;
+    padding: 14px 14px 96px;
+  }
+
+  /* Stats */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .stat-card.full {
+    grid-column: 1 / -1;
+  }
+
+  /* Cards & lists */
+  .card {
+    padding: 14px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+  }
+
+  .list-item {
+    padding: 12px;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  .list-item-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .list-item-actions .btn {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+
+  .list-item-amount {
+    font-size: 0.95rem;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .toolbar input[type="search"] {
+    flex: 1 1 100%;
+  }
+
+  /* Forms */
+  .inline-form {
+    flex-direction: column;
+  }
+
+  .inline-form input,
+  .inline-form .btn {
+    width: 100%;
+  }
+
+  /* Modal full-friendly on mobile */
+  #modal {
+    width: min(100vw - 24px, 420px);
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    border-radius: 18px;
+  }
+
+  #modal-form {
+    padding: 18px 16px;
+  }
+
+  .modal-actions {
+    position: sticky;
+    bottom: 0;
+    background: var(--surface);
+    padding-top: 12px;
+  }
+
+  /* Login */
+  .login-screen {
+    padding: 12px;
+    align-items: flex-start;
+  }
+
+  .login-card {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    border-radius: 18px;
+  }
+
+  .login-welcome {
+    min-height: 220px;
+    padding: 28px 24px;
+  }
+
+  .login-form-panel {
+    padding: 28px 22px;
+  }
+
+  .welcome-copy h1,
+  .login-form-heading h2 {
+    font-size: 1.6rem;
+  }
+
+  /* Budget / compare */
+  .restore-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dashboard-option-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .sidebar-nav {
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .sidebar-link {
+    font-size: 0.6rem;
+    min-height: 48px;
+  }
+
+  .stat-value {
+    font-size: 1.05rem;
+  }
+
+  .list-item {
+    flex-wrap: wrap;
+  }
+
+  .list-item-amount {
+    width: 100%;
+    text-align: right;
+    margin-top: 4px;
+  }
+}
+
+/* Large phones / small tablets landscape */
+@media (min-width: 601px) and (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main {
+    padding: 18px 20px 100px;
+  }
+}
+
+/* Desktop remains sidebar layout */
+@media (min-width: 901px) {
+  .sidebar-nav {
+    grid-template-columns: 1fr;
+  }
+}
