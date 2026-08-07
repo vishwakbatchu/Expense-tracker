@@ -340,107 +340,86 @@ function openModal(mode, item = null) {
   const fields = $("#modal-fields");
   const title = $("#modal-title");
 
-
   if (mode === "expense") {
-  title.textContent = item ? "Edit expense" : "Add expense";
-  fields.innerHTML = `
-    <label>Date
-      <input type="date" name="date" value="${item?.date || today()}" required>
-    </label>
-    <label>Description
-      <input type="text" name="description" id="expense-description"
-             value="${escapeHtml(item?.description || "")}"
-             placeholder="e.g. Starbucks coffee">
-    </label>
-    <label>Category
-      <input type="text" name="category" id="expense-category"
-             value="${escapeHtml(item?.category || "")}" required>
-    </label>
-    <div id="category-suggestion" class="hint" style="margin-top:4px; display:none;"></div>
-    <label>Amount
-      <input type="number" name="amount" step="0.01" min="0.01"
-             value="${item?.amount || ""}" required>
-    </label>
-  `;
+    title.textContent = item ? "Edit expense" : "Add expense";
+    fields.innerHTML = `
+      <label>Date
+        <input type="date" name="date" value="${item?.date || today()}" required>
+      </label>
+      <label>Description
+        <input type="text" name="description" id="expense-description"
+               value="${escapeHtml(item?.description || "")}"
+               placeholder="e.g. Starbucks coffee">
+      </label>
+      <label>Category
+        <input type="text" name="category" id="expense-category"
+               value="${escapeHtml(item?.category || "")}" required>
+      </label>
+      <div id="category-suggestion" class="hint" style="margin-top:4px; display:none;"></div>
+      <label>Amount
+        <input type="number" name="amount" step="0.01" min="0.01"
+               value="${item?.amount || ""}" required>
+      </label>
+    `;
 
-  // Smart Suggest
-  setTimeout(() => {
-    const descInput = $("#expense-description");
-    const catInput = $("#expense-category");
-    const suggestionBox = $("#category-suggestion");
+    // Smart Suggest
+    setTimeout(() => {
+      const descInput = $("#expense-description");
+      const catInput = $("#expense-category");
+      const suggestionBox = $("#category-suggestion");
 
-    let timer = null;
-    descInput?.addEventListener("input", () => {
-      clearTimeout(timer);
-      timer = setTimeout(async () => {
-        const text = descInput.value.trim();
-        if (text.length < 3) {
-          suggestionBox.style.display = "none";
-          return;
-        }
-        try {
-          const res = await api.mlCategorySuggest(text);
-          if (res.predicted_category) {
-            suggestionBox.style.display = "block";
-            suggestionBox.innerHTML = `
-              Suggested: <strong>${escapeHtml(res.predicted_category)}</strong>
-              (${Math.round(res.confidence * 100)}% confidence)
-              <button type="button" class="btn" id="accept-suggestion" style="margin-left:8px;padding:2px 8px;">Accept</button>
-            `;
-            $("#accept-suggestion")?.addEventListener("click", () => {
-              catInput.value = res.predicted_category;
-              suggestionBox.style.display = "none";
-            });
-          } else {
-            suggestionBox.style.display = "block";
-            suggestionBox.textContent = res.reason || "Not enough data yet for suggestions.";
+      let timer = null;
+      descInput?.addEventListener("input", () => {
+        clearTimeout(timer);
+        timer = setTimeout(async () => {
+          const text = descInput.value.trim();
+          if (text.length < 3) {
+            suggestionBox.style.display = "none";
+            return;
           }
-        } catch (err) {
-          suggestionBox.style.display = "none";
-        }
-      }, 400);
-    });
-  }, 0);
-}
-  // Smart Suggest logic
-  setTimeout(() => {
-    const descInput = $("#expense-description");
-    const catInput = $("#expense-category");
-    const suggestionBox = $("#category-suggestion");
-
-    let timer = null;
-    descInput?.addEventListener("input", () => {
-      clearTimeout(timer);
-      timer = setTimeout(async () => {
-        const text = descInput.value.trim();
-        if (text.length < 3) {
-          suggestionBox.style.display = "none";
-          return;
-        }
-        try {
-          const res = await api.mlCategorySuggest(text);
-          if (res.predicted_category) {
-            suggestionBox.style.display = "block";
-            suggestionBox.innerHTML = `
-              Suggested: <strong>${escapeHtml(res.predicted_category)}</strong>
-              (${Math.round(res.confidence * 100)}% confidence)
-              <button type="button" class="btn" id="accept-suggestion" style="margin-left:8px;padding:2px 8px;">Accept</button>
-            `;
-            $("#accept-suggestion")?.addEventListener("click", () => {
-              catInput.value = res.predicted_category;
-              suggestionBox.style.display = "none";
-            });
-          } else {
-            suggestionBox.style.display = "block";
-            suggestionBox.textContent = res.reason || "Not enough data yet for suggestions.";
+          try {
+            const res = await api.mlCategorySuggest(text);
+            if (res.predicted_category) {
+              suggestionBox.style.display = "block";
+              suggestionBox.innerHTML = `
+                Suggested: <strong>${escapeHtml(res.predicted_category)}</strong>
+                (${Math.round(res.confidence * 100)}% confidence)
+                <button type="button" class="btn" id="accept-suggestion" style="margin-left:8px;padding:2px 8px;">Accept</button>
+              `;
+              $("#accept-suggestion")?.addEventListener("click", () => {
+                catInput.value = res.predicted_category;
+                suggestionBox.style.display = "none";
+              });
+            } else {
+              suggestionBox.style.display = "block";
+              suggestionBox.textContent = res.reason || "Not enough data yet for suggestions.";
+            }
+          } catch (err) {
+            suggestionBox.style.display = "none";
           }
-        } catch (err) {
-          suggestionBox.style.display = "none";
-        }
-      }, 400);
-    });
-  }, 0);
+        }, 400);
+      });
+    }, 0);
+
+  } else if (mode === "income") {
+    title.textContent = "Add income";
+    fields.innerHTML = `
+      <label>Date<input type="date" name="date" value="${today()}" required></label>
+      <label>Source<input type="text" name="source" placeholder="Salary, Freelance…" required></label>
+      <label>Amount<input type="number" name="amount" step="0.01" min="0.01" required></label>`;
+  } else if (mode === "recurring") {
+    title.textContent = "Add recurring expense";
+    fields.innerHTML = `
+      <label>Category<input type="text" name="category" required></label>
+      <label>Amount<input type="number" name="amount" step="0.01" min="0.01" required></label>
+      <label>Day of month (1–28)<input type="number" name="day" min="1" max="28" value="1" required></label>`;
+  }
+
+  modal.showModal();
 }
+
+
+
 modalForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const fd = new FormData(modalForm);
