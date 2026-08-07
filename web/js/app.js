@@ -144,11 +144,12 @@ async function renderDashboard() {
 
 function expenseItemHtml(e) {
   const recurring = e.recurring ? ' <span class="badge ok">Recurring</span>' : "";
+  const desc = e.description ? escapeHtml(e.description) : "";
   return `
     <div class="list-item" data-id="${e.id}">
       <div class="list-item-main">
-        <div class="list-item-title">${escapeHtml(e.category)}${recurring}</div>
-        <div class="list-item-meta">${escapeHtml(e.date)} · ${e.id}</div>
+        <div class="list-item-title">${desc || escapeHtml(e.category)}${recurring}</div>
+        <div class="list-item-meta">${escapeHtml(e.category)} · ${escapeHtml(e.date)} · ${e.id}</div>
       </div>
       <div class="list-item-amount">${fmt(e.amount)}</div>
       <div class="list-item-actions">
