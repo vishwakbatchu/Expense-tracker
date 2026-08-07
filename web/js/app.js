@@ -340,7 +340,8 @@ function openModal(mode, item = null) {
   const fields = $("#modal-fields");
   const title = $("#modal-title");
 
-if (mode === "expense") {
+
+  if (mode === "expense") {
   title.textContent = item ? "Edit expense" : "Add expense";
   fields.innerHTML = `
     <label>Date
@@ -362,6 +363,45 @@ if (mode === "expense") {
     </label>
   `;
 
+  // Smart Suggest
+  setTimeout(() => {
+    const descInput = $("#expense-description");
+    const catInput = $("#expense-category");
+    const suggestionBox = $("#category-suggestion");
+
+    let timer = null;
+    descInput?.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        const text = descInput.value.trim();
+        if (text.length < 3) {
+          suggestionBox.style.display = "none";
+          return;
+        }
+        try {
+          const res = await api.mlCategorySuggest(text);
+          if (res.predicted_category) {
+            suggestionBox.style.display = "block";
+            suggestionBox.innerHTML = `
+              Suggested: <strong>${escapeHtml(res.predicted_category)}</strong>
+              (${Math.round(res.confidence * 100)}% confidence)
+              <button type="button" class="btn" id="accept-suggestion" style="margin-left:8px;padding:2px 8px;">Accept</button>
+            `;
+            $("#accept-suggestion")?.addEventListener("click", () => {
+              catInput.value = res.predicted_category;
+              suggestionBox.style.display = "none";
+            });
+          } else {
+            suggestionBox.style.display = "block";
+            suggestionBox.textContent = res.reason || "Not enough data yet for suggestions.";
+          }
+        } catch (err) {
+          suggestionBox.style.display = "none";
+        }
+      }, 400);
+    });
+  }, 0);
+}
   // Smart Suggest logic
   setTimeout(() => {
     const descInput = $("#expense-description");
