@@ -94,13 +94,14 @@ def check_budget_warnings(expense, expenses=None, budgets=None):
     return warnings
 
 
-def add_expense(date, category, amount):
+def add_expense(date, category, amount, description=None):
     expenses = storage.load_expenses()
     expense = {
         "id": str(uuid.uuid4())[:8],
         "date": date,
         "category": category.strip(),
         "amount": float(amount),
+        "description": description.strip() if description else None,
     }
     expenses.append(expense)
     storage.save_expenses(expenses)
