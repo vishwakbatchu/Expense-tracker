@@ -109,7 +109,7 @@ def add_expense(date, category, amount, description=None):
     return expense, warnings
 
 
-def update_expense(expense_id, date, category, amount):
+def update_expense(expense_id, date, category, amount, description=None):
     expenses = storage.load_expenses()
     expense = None
     for e in expenses:
@@ -117,6 +117,7 @@ def update_expense(expense_id, date, category, amount):
             e["date"] = date
             e["category"] = category.strip()
             e["amount"] = float(amount)
+            e["description"] = description.strip() if description else None
             expense = e
             break
     if expense is None:
