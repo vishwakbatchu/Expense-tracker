@@ -55,6 +55,8 @@ async function refreshCurrentView() {
     else if (state.view === "budgets") await renderBudgets();
     else if (state.view === "recurring") await renderRecurring();
     else if (state.view === "compare") await renderComparison();
+    else if (state.view === "anomalies") await renderAnomalies();
+    else if (state.view === "ml-status") await renderMlStatus();
   } catch (err) {
     if (err.name === "AuthError") {
       showLogin();
