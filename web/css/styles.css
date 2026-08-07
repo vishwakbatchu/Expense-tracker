@@ -1386,3 +1386,176 @@ input[type="date"] {
     grid-template-columns: 1fr;
   }
 }
+/* ===== Dark mode ===== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #0b1220;
+    --surface: #111827;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --muted-fg: #94a3b8;
+    --border: #1f2a3d;
+    --primary: #a78bfa;
+    --primary-hover: #8b5cf6;
+    --accent: #fb923c;
+    --accent-soft: #431407;
+    --danger: #f87171;
+    --success: #2dd4bf;
+    --warning: #fbbf24;
+    --income: #2dd4bf;
+    --expense: #fb923c;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 90% 6%, rgba(124, 58, 237, 0.18) 0, transparent 22rem),
+      var(--bg);
+    color: var(--text);
+  }
+
+  .header,
+  .sidebar,
+  .card,
+  .list-item,
+  .stat-card,
+  #modal,
+  .toast {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  /* Keep gradient stat cards colorful in dark mode */
+  .stat-card:nth-child(1) {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  }
+  .stat-card:nth-child(2) {
+    background: linear-gradient(135deg, #14b8a6, #0f766e);
+  }
+  .stat-card:nth-child(3) {
+    background: linear-gradient(135deg, #f97316, #c2410c);
+  }
+  .stat-card:nth-child(4),
+  .stat-card.full {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  }
+
+  .stat-label,
+  .stat-value,
+  .stat-value.positive,
+  .stat-value.negative {
+    color: #fff;
+  }
+
+  .sidebar-link {
+    color: var(--muted-fg);
+  }
+
+  .sidebar-link.active {
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--primary);
+    border-color: transparent;
+  }
+
+  .category-pill {
+    background: rgba(167, 139, 250, 0.18);
+    color: #c4b5fd;
+  }
+
+  input[type="search"],
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="password"],
+  input[type="email"],
+  .month-filter select,
+  .toolbar select {
+    background: #0b1220;
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .btn {
+    background: #1f2a3d;
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .btn.primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #0b1220;
+  }
+
+  .list-item-amount {
+    color: #fb923c;
+  }
+
+  #category-suggestion {
+    background: rgba(167, 139, 250, 0.12);
+    border-color: rgba(167, 139, 250, 0.35);
+    color: #ddd6fe;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
+  .login-form-panel {
+    background: var(--surface);
+  }
+
+  #login-form input {
+    background: #0b1220;
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .badge.ok {
+    background: rgba(45, 212, 191, 0.15);
+    color: #5eead4;
+  }
+
+  .badge.over {
+    background: rgba(248, 113, 113, 0.15);
+    color: #fca5a5;
+  }
+
+  /* Mobile bottom nav in dark mode */
+  @media (max-width: 900px) {
+    .sidebar {
+      background: rgba(17, 24, 39, 0.96);
+      border-top-color: var(--border);
+      box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+/* Manual dark mode override (optional toggle) */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --surface: #111827;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --muted-fg: #94a3b8;
+  --border: #1f2a3d;
+  --primary: #a78bfa;
+  --primary-hover: #8b5cf6;
+  --accent: #fb923c;
+  --accent-soft: #431407;
+  --danger: #f87171;
+  --success: #2dd4bf;
+  --warning: #fbbf24;
+  --income: #2dd4bf;
+  --expense: #fb923c;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
