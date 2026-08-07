@@ -258,6 +258,71 @@ async function renderComparison() {
     .join("");
 }
 
+async function renderAnomalies() {
+  const data = await api.mlAnomalies();
+  const list = $("#anomalies-list");
+
+  if (!data.flagged || data.flagged.length === 0) {
+    list.innerHTML = `<p class="empty-state">${data.reason || "No unusual expenses detected."}</p>`;
+    return;
+  }
+
+  list.innerHTML = data.flagged
+    .map(
+      (e) => `
+      <div class="list-item">
+        <div class="list-item-main">
+          <div class="list-item-title">${escapeHtml(e.category)}</div>
+          <div class="list-item-meta">
+            ${escapeHtml(e.date)} · ${e.method} · score: ${e.score}
+          </div>
+        </div>
+        <div class="list-item-amount">${fmt(e.amount)}</div>
+      </div>`
+    )
+    .join("");
+}
+
+async function renderMlStatus() {
+  const status = await api.mlCategoryStatus();
+  const evaluate = await api.mlCategoryEvaluate();
+
+  $("#ml-status-card").innerHTML = `
+    <p><strong>Ready:</strong> ${status.ready ? "✅ Yes" : "❌ No"}</p>
+    <p>Labeled examples: ${status.labeled_examples}</p>
+    <p>Distinct categories: ${status.distinct_categories}</p>
+    <p class="hint">Needs at least ${status.min_examples_required} examples and ${status.min_categories_required} categories.</p>
+  `;
+
+  if (evaluate.evaluated) {
+    $("#ml-evaluate-card").innerHTML = `
+      <p><strong>Mean Accuracy:</strong> ${(evaluate.mean_accuracy * 100).toFixed(1)}%</p>
+      <p>CV folds: ${evaluate.cv_folds}</p>
+      <p>Fold scores: ${evaluate.fold_scores.map((s) => (s * 100).toFixed(1) + "%").join(", ")}</p>
+    `;
+  } else {
+    $("#ml-evaluate-card").innerHTML = `<p class="hint">${evaluate.reason || "Not enough data to evaluate."}</p>`;
+  }
+
+  // Simple Insights
+  const anomalies = await api.mlAnomalies();
+  const flagged = anomalies.flagged || [];
+  const topCategory = flagged.length
+    ? flagged.sort((a, b) => b.amount - a.amount)[0].category
+    : "—";
+
+  $("#ml-insights").innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Unusual expenses found</div>
+      <div class="stat-value">${flagged.length}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top unusual category</div>
+      <div class="stat-value" style="font-size:1rem">${escapeHtml(topCategory)}</div>
+    </div>
+  `;
+}
+
 function escapeHtml(str) {
   const d = document.createElement("div");
   d.textContent = str;
